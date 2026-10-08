@@ -1,0 +1,158 @@
+ticket_id,order_id,date,text,category
+T50001,O100016,2026-08-02,Payment failed,Delivery Delay
+T50002,O100026,2026-08-03,Why was my payment refunded?,Refund Issue
+T50003,O100048,2026-08-03,Why was my payment refunded?,Refund Issue
+T50004,O100149,2026-08-04,Payment failed and order was cancelled,Refund Issue
+T50005,O100287,2026-08-07,Payment failed and order was cancelled,Payment Issue
+T50006,O100313,2026-08-05,Payment failed and order was cancelled,Refund Issue
+T50007,O100327,2026-08-07,My order is delayed,Delivery Delay
+T50008,O100328,2026-08-07,Payment failed and order was cancelled,Refund Issue
+T50009,O100376,2026-08-07,Payment failed for my order,Refund Issue
+T50010,O100376,2026-08-06,Payment failed,Delivery Delay
+T50011,O100423,2026-08-07,Payment failed and order was cancelled,Payment Issue
+T50012,O100437,2026-08-07,My order is delayed,Cancellation
+T50013,O100565,2026-08-09,Why was my payment refunded?,Payment Issue
+T50014,O100624,2026-08-11,Payment failed and order was cancelled,Refund Issue
+T50015,O100653,2026-08-10,Order has not arrived,Cancellation
+T50016,O100654,2026-08-11,Payment failed for my order,Payment Issue
+T50017,O100671,2026-08-11,I have a payment/refund issue,Refund Issue
+T50018,O100803,2026-08-11,I have a payment/refund issue,Refund Issue
+T50019,O100848,2026-08-13,Payment failed and order was cancelled,Payment Issue
+T50020,O100863,2026-08-12,I have a payment/refund issue,Refund Issue
+T50021,O100973,2026-08-15,Order has not arrived,Delivery Delay
+T50022,O101091,2026-08-16,Payment failed and order was cancelled,Payment Issue
+T50023,O101092,2026-08-17,I have a payment/refund issue,Payment Issue
+T50024,O101198,2026-08-17,Payment failed for my order,Refund Issue
+T50025,O101240,2026-08-18,Why was my payment refunded?,Refund Issue
+T50026,O101347,2026-08-18,Payment failed,Delivery Delay
+T50027,O101349,2026-08-19,My order is delayed,Delivery Delay
+T50028,O101668,2026-08-23,Why was my order cancelled?,Delivery Delay
+T50029,O101921,2026-08-27,Payment failed for my order,Refund Issue
+T50030,O101967,2026-08-27,Payment failed and order was cancelled,Refund Issue
+T50031,O102187,2026-08-29,Payment failed,Delivery Delay
+T50032,O102191,2026-08-29,I have a payment/refund issue,Refund Issue
+T50033,O102202,2026-08-29,Payment failed,Delivery Delay
+T50034,O102208,2026-08-30,Why was my order cancelled?,Cancellation
+T50035,O102221,2026-08-29,Payment failed,Delivery Delay
+T50036,O102340,2026-09-02,I have a payment/refund issue,Refund Issue
+T50037,O102364,2026-09-02,My order is delayed,Cancellation
+T50038,O102520,2026-09-04,My order is delayed,Delivery Delay
+T50039,O102589,2026-09-04,My order is delayed,Cancellation
+T50040,O102639,2026-09-04,Why was my payment refunded?,Refund Issue
+T50041,O102803,2026-09-07,Why was my payment refunded?,Payment Issue
+T50042,O103181,2026-09-10,Payment failed,Delivery Delay
+T50043,O103197,2026-09-10,Payment failed and order was cancelled,Payment Issue
+T50044,O103282,2026-09-11,Payment failed and order was cancelled,Refund Issue
+T50045,O103314,2026-09-12,Payment failed and order was cancelled,Refund Issue
+T50046,O103377,2026-09-12,Payment failed,Delivery Delay
+T50047,O103393,2026-09-15,Payment failed and order was cancelled,Payment Issue
+T50048,O103409,2026-09-15,I have a payment/refund issue,Refund Issue
+T50049,O103418,2026-09-15,Why was my payment refunded?,Refund Issue
+T50050,O103427,2026-09-13,My order is delayed,Delivery Delay
+T50051,O103433,2026-09-14,Payment failed for my order,Payment Issue
+T50052,O103454,2026-09-13,Payment failed for my order,Payment Issue
+T50053,O103477,2026-09-15,I have a payment/refund issue,Refund Issue
+T50054,O103484,2026-09-14,My order is delayed,Cancellation
+T50055,O103489,2026-09-16,Why was my payment refunded?,Payment Issue
+T50056,O103490,2026-09-14,Payment failed for my order,Refund Issue
+T50057,O103498,2026-09-14,Order has not arrived,Delivery Delay
+T50058,O103499,2026-09-14,Payment failed for my order,Refund Issue
+T50059,O103514,2026-09-16,Order has not arrived,Cancellation
+T50060,O103515,2026-09-14,My order is delayed,Cancellation
+T50061,O103518,2026-09-15,Payment failed for my order,Payment Issue
+T50062,O103540,2026-09-14,Why was my payment refunded?,Payment Issue
+T50063,O103547,2026-09-16,Payment failed and order was cancelled,Payment Issue
+T50064,O103571,2026-09-16,Why was my payment refunded?,Refund Issue
+T50065,O103578,2026-09-16,Why was my order cancelled?,Cancellation
+T50066,O103581,2026-09-16,Payment failed for my order,Refund Issue
+T50067,O103585,2026-09-15,Payment failed,Delivery Delay
+T50068,O103607,2026-09-17,Order has not arrived,Delivery Delay
+T50069,O103607,2026-09-15,Payment failed,Delivery Delay
+T50070,O103610,2026-09-16,My order is delayed,Delivery Delay
+T50071,O103613,2026-09-17,Why was my order cancelled?,Delivery Delay
+T50072,O103622,2026-09-17,Payment failed for my order,Payment Issue
+T50073,O103641,2026-09-17,Payment failed and order was cancelled,Payment Issue
+T50074,O103647,2026-09-17,I have a payment/refund issue,Refund Issue
+T50075,O103652,2026-09-17,Why was my payment refunded?,Refund Issue
+T50076,O103652,2026-09-16,Payment failed,Delivery Delay
+T50077,O103671,2026-09-17,Payment failed and order was cancelled,Refund Issue
+T50078,O103682,2026-09-18,My order is delayed,Delivery Delay
+T50079,O103683,2026-09-18,Why was my order cancelled?,Delivery Delay
+T50080,O103700,2026-09-17,Payment failed and order was cancelled,Refund Issue
+T50081,O103704,2026-09-18,Payment failed and order was cancelled,Payment Issue
+T50082,O103706,2026-09-17,Why was my payment refunded?,Payment Issue
+T50083,O103719,2026-09-17,My order is delayed,Cancellation
+T50084,O103738,2026-09-17,Order has not arrived,Delivery Delay
+T50085,O103759,2026-09-17,Why was my payment refunded?,Payment Issue
+T50086,O103776,2026-09-18,Payment failed and order was cancelled,Refund Issue
+T50087,O103778,2026-09-18,Payment failed and order was cancelled,Payment Issue
+T50088,O103786,2026-09-18,Payment failed and order was cancelled,Refund Issue
+T50089,O103814,2026-09-20,Payment failed for my order,Payment Issue
+T50090,O103840,2026-09-19,Why was my payment refunded?,Refund Issue
+T50091,O103848,2026-09-18,Order has not arrived,Delivery Delay
+T50092,O103856,2026-09-19,I have a payment/refund issue,Payment Issue
+T50093,O103865,2026-09-20,Order has not arrived,Cancellation
+T50094,O103868,2026-09-18,Why was my order cancelled?,Delivery Delay
+T50095,O103892,2026-09-19,Payment failed for my order,Payment Issue
+T50096,O103902,2026-09-21,My order is delayed,Cancellation
+T50097,O103909,2026-09-21,Payment failed for my order,Refund Issue
+T50098,O103913,2026-09-20,I have a payment/refund issue,Refund Issue
+T50099,O103931,2026-09-21,I have a payment/refund issue,Refund Issue
+T50100,O103932,2026-09-19,Why was my payment refunded?,Payment Issue
+T50101,O103935,2026-09-21,Payment failed and order was cancelled,Refund Issue
+T50102,O103958,2026-09-21,Why was my order cancelled?,Delivery Delay
+T50103,O103958,2026-09-19,Payment failed,Delivery Delay
+T50104,O103963,2026-09-20,Why was my order cancelled?,Cancellation
+T50105,O103967,2026-09-22,Payment failed for my order,Payment Issue
+T50106,O103981,2026-09-22,My order is delayed,Delivery Delay
+T50107,O103983,2026-09-22,Why was my order cancelled?,Delivery Delay
+T50108,O103985,2026-09-21,Order has not arrived,Delivery Delay
+T50109,O104004,2026-09-21,Order has not arrived,Delivery Delay
+T50110,O104005,2026-09-20,Why was my payment refunded?,Payment Issue
+T50111,O104008,2026-09-22,Order has not arrived,Delivery Delay
+T50112,O104009,2026-09-21,Payment failed and order was cancelled,Refund Issue
+T50113,O104012,2026-09-21,I have a payment/refund issue,Payment Issue
+T50114,O104023,2026-09-22,I have a payment/refund issue,Payment Issue
+T50115,O104035,2026-09-23,Payment failed for my order,Payment Issue
+T50116,O104048,2026-09-22,Order has not arrived,Cancellation
+T50117,O104057,2026-09-23,Payment failed for my order,Payment Issue
+T50118,O104090,2026-09-23,Payment failed and order was cancelled,Refund Issue
+T50119,O104113,2026-09-22,Payment failed and order was cancelled,Payment Issue
+T50120,O104119,2026-09-22,Payment failed for my order,Payment Issue
+T50121,O104123,2026-09-24,I have a payment/refund issue,Refund Issue
+T50122,O104124,2026-09-23,I have a payment/refund issue,Payment Issue
+T50123,O104131,2026-09-24,I have a payment/refund issue,Refund Issue
+T50124,O104156,2026-09-24,Why was my payment refunded?,Payment Issue
+T50125,O104168,2026-09-22,Why was my payment refunded?,Refund Issue
+T50126,O104174,2026-09-24,My order is delayed,Delivery Delay
+T50127,O104175,2026-09-24,I have a payment/refund issue,Payment Issue
+T50128,O104176,2026-09-23,Payment failed and order was cancelled,Payment Issue
+T50129,O104192,2026-09-24,Payment failed for my order,Refund Issue
+T50130,O104197,2026-09-24,Why was my payment refunded?,Refund Issue
+T50131,O104213,2026-09-24,Payment failed and order was cancelled,Refund Issue
+T50132,O104226,2026-09-23,Payment failed for my order,Payment Issue
+T50133,O104233,2026-09-23,Payment failed for my order,Payment Issue
+T50134,O104235,2026-09-24,Payment failed and order was cancelled,Payment Issue
+T50135,O104251,2026-09-23,Payment failed,Delivery Delay
+T50136,O104252,2026-09-25,Payment failed for my order,Payment Issue
+T50137,O104260,2026-09-26,Order has not arrived,Cancellation
+T50138,O104280,2026-09-24,Payment failed for my order,Payment Issue
+T50139,O104283,2026-09-24,Payment failed and order was cancelled,Payment Issue
+T50140,O104285,2026-09-25,Payment failed and order was cancelled,Payment Issue
+T50141,O104316,2026-09-26,Why was my payment refunded?,Refund Issue
+T50142,O104322,2026-09-26,I have a payment/refund issue,Refund Issue
+T50143,O104329,2026-09-27,Payment failed for my order,Payment Issue
+T50144,O104342,2026-09-26,Order has not arrived,Delivery Delay
+T50145,O104344,2026-09-26,My order is delayed,Cancellation
+T50146,O104381,2026-09-27,Payment failed and order was cancelled,Payment Issue
+T50147,O104382,2026-09-27,Payment failed for my order,Payment Issue
+T50148,O104393,2026-09-25,I have a payment/refund issue,Refund Issue
+T50149,O104405,2026-09-25,Order has not arrived,Delivery Delay
+T50150,O104408,2026-09-28,Why was my payment refunded?,Payment Issue
+T50151,O104411,2026-09-27,My order is delayed,Cancellation
+T50152,O104411,2026-09-26,Payment failed,Delivery Delay
+T50153,O104426,2026-09-26,Payment failed,Delivery Delay
+T50154,O104450,2026-09-26,Payment failed and order was cancelled,Payment Issue
+T50155,O104468,2026-09-28,Order has not arrived,Cancellation
+T50156,O104479,2026-09-26,Payment failed for my order,Payment Issue
+T50157,O104481,2026-09-28,Payment failed for my order,Payment Issue

@@ -1,0 +1,3125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CasualCourt — Autonomous Business Process Investigator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    .live-dot {
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .slide-panel {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .slide-panel.hidden-slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .slide-panel.active-slide {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+  
+    /* Sidebar collapse / expand transitions */
+    .sidebar-expanded {
+      width: 16rem; /* 256px */
+    }
+    .sidebar-collapsed {
+      width: 4.5rem; /* 72px */
+    }
+    .sidebar-collapsed .sidebar-text,
+    .sidebar-collapsed .sidebar-header-text,
+    .sidebar-collapsed .sidebar-section-title,
+    .sidebar-collapsed .sidebar-status-widget {
+      display: none !important;
+    }
+    .sidebar-collapsed .sidebar-item {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .sidebar-collapsed .sidebar-brand {
+      justify-content: center;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col md:flex-row selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- MOBILE HEADER (Small screens < md) -->
+  <header class="md:hidden bg-slate-900 text-white px-4 py-3 border-b border-slate-800 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center space-x-2 cursor-pointer" onclick="navigateTo('case')">
+      <img src="logo.png" alt="CasualCourt Logo" class="w-7 h-7 object-contain rounded-lg bg-white p-0.5">
+      <div>
+        <span class="font-extrabold text-base text-white tracking-tight">CasualCourt</span>
+        <span class="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-blue-500/20 text-blue-300 rounded border border-blue-500/30">ENTERPRISE</span>
+      </div>
+    </div>
+    <button onclick="toggleMobileMenu()" class="p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+  </header>
+
+  <!-- MOBILE MENU DROPDOWN -->
+  <div id="mobileNavMenu" class="hidden md:hidden bg-slate-900 border-b border-slate-800 px-4 py-3 space-y-1 sticky top-[53px] z-40 shadow-xl">
+    <button onclick="navigateTo('case')" id="mobile-nav-case" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800">
+      <span>1. CASE</span>
+    </button>
+    <button onclick="navigateTo('evidence')" id="mobile-nav-evidence" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">
+      <span>2. EVIDENCE</span>
+    </button>
+    <button onclick="navigateTo('suspects')" id="mobile-nav-suspects" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">
+      <span>3. SUSPECTS</span>
+    </button>
+    <button onclick="navigateTo('forensics')" id="mobile-nav-forensics" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">
+      <span>4. FORENSICS</span>
+    </button>
+    <button onclick="navigateTo('challenge')" id="mobile-nav-challenge" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">
+      <span>5. CHALLENGE</span>
+    </button>
+    <button onclick="navigateTo('verdict')" id="mobile-nav-verdict" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">
+      <span>6. VERDICT</span>
+    </button>
+    <button onclick="navigateTo('audit')" id="mobile-nav-audit" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">
+      <span>7. AUDIT</span>
+    </button>
+    <button onclick="navigateTo('tutorial')" id="mobile-nav-tutorial" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-amber-400 hover:bg-slate-800">
+      <span>8. TUTORIAL</span>
+    </button>
+  </div>
+
+    <!-- FIXED LEFT SIDEBAR (Desktop >= md) -->
+  <aside id="desktopSidebar" class="hidden md:flex flex-col w-64 shrink-0 bg-slate-900 text-slate-300 border-r border-slate-800 min-h-screen sticky top-0 h-screen overflow-y-auto z-40 transition-all duration-300">
+    <!-- Brand Header -->
+    <div class="p-4 border-b border-slate-800/80 flex items-center space-x-3 cursor-pointer sidebar-brand" onclick="navigateTo('case')">
+      <img src="logo.png" alt="CasualCourt Logo" class="w-9 h-9 object-contain rounded-xl bg-white p-0.5 shadow-md shrink-0">
+      <div class="sidebar-header-text">
+        <div class="flex items-center space-x-2">
+          <span class="font-extrabold text-lg tracking-tight text-white leading-none">CasualCourt</span>
+        </div>
+        <div class="flex items-center space-x-1.5 mt-1">
+          <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 leading-none">ENTERPRISE</span>
+          <span class="text-[10px] text-slate-400 font-medium">Investigator</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Section Title -->
+    <div class="px-5 pt-4 pb-2 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold sidebar-section-title">
+      Workspace Views
+    </div>
+
+    <!-- Sidebar Navigation List -->
+    <nav class="flex-1 px-3 space-y-1">
+      <button onclick="navigateTo('case')" id="sidebar-nav-case" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all sidebar-item-active" title="Case View">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <span class="sidebar-text">Case</span>
+      </button>
+
+      <button onclick="navigateTo('evidence')" id="sidebar-nav-evidence" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60" title="Evidence Workspace">
+        <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span class="sidebar-text">Evidence</span>
+      </button>
+
+      <button onclick="navigateTo('suspects')" id="sidebar-nav-suspects" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60" title="Suspects & Hypotheses">
+        <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="sidebar-text">Suspects</span>
+      </button>
+
+      <button onclick="navigateTo('forensics')" id="sidebar-nav-forensics" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60" title="Forensics Trace">
+        <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2m-4 4h8m-4-4v4m6-4a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="sidebar-text">Forensics</span>
+      </button>
+
+      <button onclick="navigateTo('challenge')" id="sidebar-nav-challenge" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60" title="Counter-Hypothesis Challenge">
+        <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <span class="sidebar-text">Challenge</span>
+      </button>
+
+      <button onclick="navigateTo('verdict')" id="sidebar-nav-verdict" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60" title="Final Verdict">
+        <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="sidebar-text">Verdict</span>
+      </button>
+
+      <button onclick="navigateTo('audit')" id="sidebar-nav-audit" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60" title="Audit Ledger">
+        <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+        <span class="sidebar-text">Audit</span>
+      </button>
+
+      <button onclick="navigateTo('tutorial')" id="sidebar-nav-tutorial" class="sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 border border-amber-500/20" title="Tutorial & Onboarding">
+        <svg class="w-4 h-4 shrink-0 text-amber-400 group-hover:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+        <span class="sidebar-text">Tutorial</span>
+      </button>
+    </nav>
+
+    <!-- Sidebar Status Widget -->
+    <div class="p-4 border-t border-slate-800/80 mt-auto text-xs sidebar-status-widget">
+      <div class="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-mono text-slate-400 font-bold uppercase">System State</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-500 live-dot"></span>
+        </div>
+        <p class="font-mono text-xs text-emerald-400 font-bold" id="telemetryTick">READY</p>
+        <p class="text-[10px] text-slate-400">6 Evidence Feeds Active</p>
+      </div>
+    </div>
+
+    <!-- Collapse / Expand Toggle Button at Bottom of Sidebar -->
+    <div class="p-3 border-t border-slate-800/80">
+      <button onclick="toggleSidebarCollapse()" id="collapseBtn" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
+        <svg id="collapseIcon" class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+        <span id="collapseText" class="sidebar-text">Collapse Sidebar</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN WORKSPACE WRAPPER (Right Side) -->
+  <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+
+    <!-- TOP WORKSPACE STATUS BAR -->
+    <header class="bg-white border-b border-slate-200 py-3.5 px-6 sticky top-0 z-30 shadow-xs">
+      <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
+        
+        <div class="flex items-center space-x-3">
+          <h1 id="activeViewTitle" class="text-lg font-extrabold text-slate-900 tracking-tight">Case Workspace</h1>
+          <span class="text-slate-300">|</span>
+          <span class="text-xs font-medium text-slate-500">Target: <strong class="text-slate-800">E-commerce Cancellation Spike</strong></span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="triggerNotification('Sample investigation dataset reloaded.')" class="hover:text-blue-600 font-medium text-xs text-slate-600 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Reset View
+          </button>
+          <button onclick="downloadAuditReport()" class="hover:text-blue-600 font-medium text-xs text-slate-600 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Export Case Summary
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- NOTIFICATION BANNER (INTERACTIVE TOAST) -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+      <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-3">
+        <div class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <p id="toastMessage" class="text-xs font-medium"></p>
+      </div>
+    </div>
+
+    <!-- MAIN WORKSPACE VIEWS CONTAINER -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-6 md:p-8">
+
+
+    <!-- ========================================== -->
+    <!-- SECTION 1: CASE -->
+    <!-- ========================================== -->
+    <section id="slide-1" class="slide-panel active-slide">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Header Banner -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 border border-blue-200">SECTION 01 / 07</span>
+              <span class="text-xs font-mono bg-red-50 text-red-700 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 border border-red-200">
+                <span class="w-2 h-2 rounded-full bg-red-500 live-dot"></span> ANOMALY DETECTED
+              </span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">
+              E-commerce Order Cancellation Spike
+            </h1>
+            <p class="text-sm text-slate-500 mt-1 max-w-3xl">
+              An unexpected baseline shift was detected in customer order cancellations. CasualCourt investigates competing hypotheses across fragmented business signals to determine the root cause.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="runRealSampleInvestigation()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">
+              Use Sample Data
+            </button>
+            <button onclick="openUploadModal()" class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition">
+              Upload Data
+            </button>
+            <button onclick="runRealSampleInvestigation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-blue-500/20 transition flex items-center gap-2">
+              Start Investigation →
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Core Anomaly Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition">
+            <div class="flex justify-between items-center text-slate-500 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">What went wrong?</span>
+              <span class="p-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold">ANOMALY</span>
+            </div>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-3xl font-extrabold text-slate-900" id="val-current-rate">19.3%</span>
+              <span class="text-xs font-semibold text-red-600" id="val-baseline-rate">vs 7.8% baseline</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-2">Cancellation rate jumped significantly above normal historical operating levels.</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition">
+            <div class="flex justify-between items-center text-slate-500 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">When did it start?</span>
+              <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">TIMELINE</span>
+            </div>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-2xl font-extrabold text-slate-900" id="val-start-date">2026-09-11 (Day 42)</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-2">Spike initiated on Day 42 during morning ordering window.</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-amber-400 transition">
+            <div class="flex justify-between items-center text-slate-500 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">How large is the change?</span>
+              <span class="p-1.5 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold font-mono">SCOPE</span>
+            </div>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-3xl font-extrabold text-amber-600" id="val-affected-orders">612 Orders</span>
+              <span class="text-xs font-semibold text-slate-500" id="val-value-at-risk">($107,100 Risk)</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-2">Impact concentrated across Supplier B fulfillment corridors.</p>
+          </div>
+        </div>
+
+        <!-- Investigation Process Overview Visual -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Core Flow Visual Card -->
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-blue-600"></span>
+                  CasualCourt Investigation Flow
+                </h3>
+                <p class="text-xs text-slate-500">Autonomous business process investigation architecture</p>
+              </div>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-3 py-1 rounded-full border border-slate-200">
+                Case ID: #CASE-2024-8849
+              </span>
+            </div>
+
+            <!-- Conceptual Visual Graphic -->
+            <div class="h-64 rounded-xl bg-slate-900 p-6 flex flex-col justify-between relative overflow-hidden text-white border border-slate-800">
+              <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl pointer-events-none"></div>
+              <div class="absolute left-1/3 bottom-0 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+
+              <div class="flex justify-between items-center z-10">
+                <div class="text-xs font-mono text-blue-300 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+                  INVESTIGATION PIPELINE ACTIVE
+                </div>
+                <div class="text-xs bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+                  6 Fragmented Evidence Feeds
+                </div>
+              </div>
+
+              <!-- Interactive Node Flow -->
+              <div class="grid grid-cols-4 gap-3 z-10 my-auto text-center">
+                <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <span class="text-[10px] text-slate-400 font-mono">STEP 01</span>
+                  <p class="font-bold text-white text-xs mt-0.5">Anomaly Detection</p>
+                  <p class="text-[10px] text-red-400 mt-1">● Spike Identified</p>
+                </div>
+                <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <span class="text-[10px] text-slate-400 font-mono">STEP 02</span>
+                  <p class="font-bold text-white text-xs mt-0.5">Competing Suspects</p>
+                  <p class="text-[10px] text-amber-400 mt-1">● 4 Hypotheses</p>
+                </div>
+                <div class="p-3 bg-blue-500/20 rounded-xl border border-blue-400/40">
+                  <span class="text-[10px] text-blue-300 font-mono">STEP 03</span>
+                  <p class="font-bold text-white text-xs mt-0.5">Counter Challenge</p>
+                  <p class="text-[10px] text-blue-300 mt-1">● Stress Testing</p>
+                </div>
+                <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <span class="text-[10px] text-slate-400 font-mono">STEP 04</span>
+                  <p class="font-bold text-white text-xs mt-0.5">Auditable Verdict</p>
+                  <p class="text-[10px] text-emerald-400 mt-1">● Root Cause Verdict</p>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center text-xs text-slate-400 font-mono z-10 pt-2 border-t border-white/10">
+                <span>Core Purpose: <strong class="text-blue-300">Challenge leading explanations before concluding</strong></span>
+                <span class="text-emerald-400 font-bold">Auditable Evidence Ledger</span>
+              </div>
+            </div>
+
+            <!-- Action buttons inside -->
+            <div class="flex justify-between items-center mt-4">
+              <span class="text-xs text-slate-500">CasualCourt builds competing cases from fragmented evidence to eliminate bias.</span>
+              <button onclick="goToSlide(7)" class="text-xs font-bold px-3.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition flex items-center gap-1">
+                See How We Reached This →
+              </button>
+            </div>
+          </div>
+
+          <!-- Highlight Summary Card -->
+          <div class="bg-slate-900 text-white p-6 rounded-2xl border border-slate-800 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="px-2.5 py-1 text-xs font-bold bg-blue-500/20 text-blue-300 rounded-lg border border-blue-500/30">
+                  CASE DOSSIER
+                </span>
+                <span class="text-xs font-mono text-slate-400">Ready</span>
+              </div>
+              <h4 class="font-bold text-white text-lg">Case Summary</h4>
+              <p class="text-xs text-slate-300 mt-1">E-commerce Cancellation Investigation</p>
+
+              <div class="mt-4 space-y-2.5 text-xs">
+                <div class="flex justify-between py-1.5 border-b border-slate-800">
+                  <span class="text-slate-400">Primary Phenomenon</span>
+                  <span class="font-medium text-slate-200">Order Cancellation Surge</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800">
+                  <span class="text-slate-400">Affected Orders</span>
+                  <span class="font-bold text-white font-mono">842 Customer Orders</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800">
+                  <span class="text-slate-400">Evidence Sources</span>
+                  <span class="font-bold text-blue-400 font-mono">6 Connected Files</span>
+                </div>
+                <div class="flex justify-between py-1.5">
+                  <span class="text-slate-400">Competing Explanations</span>
+                  <span class="font-bold text-emerald-400">4 Hypotheses Formulated</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-800 flex flex-col gap-2">
+              <button onclick="goToSlide(6)" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition text-center">
+                See Final Verdict →
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: EVIDENCE -->
+    <!-- ========================================== -->
+    <section id="slide-2" class="slide-panel hidden-slide">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 border border-blue-200">SECTION 02 / 07</span>
+              <span class="text-xs font-mono bg-blue-50 text-blue-800 px-2.5 py-1 rounded-lg font-bold">
+                6 EVIDENCE SOURCES LOADED
+              </span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">
+              Evidence
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">
+              Bring together the signals needed to investigate the case. CasualCourt inspects heterogeneous evidence across multiple business functions.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="goToSlide(1)" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">
+              ← Case Overview
+            </button>
+            <button onclick="goToSlide(3)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-blue-500/20 transition">
+              Form Hypotheses (Suspects) →
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter / Source selector -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+            <button onclick="filterIngestion('all')" id="btn-ingest-all" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-sm transition">
+              All Sources (6)
+            </button>
+            <button onclick="filterIngestion('orders')" id="btn-ingest-orders" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+              Orders Data
+            </button>
+            <button onclick="filterIngestion('supplier')" id="btn-ingest-supplier" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+              Supplier Events
+            </button>
+            <button onclick="filterIngestion('inventory')" id="btn-ingest-inventory" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+              Inventory &amp; Payments
+            </button>
+            <button onclick="filterIngestion('support')" id="btn-ingest-support" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+              Support &amp; Prices
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-3 text-xs text-slate-500">
+            <span>Heterogeneous alignment: <strong class="text-emerald-700 font-semibold">Ready</strong></span>
+          </div>
+        </div>
+
+        <!-- 6 Evidence Source Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="ingestionGrid">
+
+          <!-- Source 1: Orders -->
+          <div class="ingest-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between" data-category="orders">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold text-blue-600">SOURCE 01</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-100 text-blue-800">ORDERS</span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-base">Customer Orders Feed</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Local Dataset • orders_dec2024.json</p>
+              
+              <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Key Signal:</span>
+                  <span class="font-bold text-slate-800">842 Cancellations</span>
+                </div>
+                <div class="text-[11px] text-slate-600 mt-1">Cancellations concentrated in express deliveries across West Coast &amp; Europe DC.</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+              <span class="text-[11px] text-blue-600 font-medium">Evidence Loaded</span>
+              <button onclick="goToSlide(3)" class="text-xs font-bold text-blue-700 hover:underline">
+                Inspect →
+              </button>
+            </div>
+          </div>
+
+          <!-- Source 2: Supplier Events -->
+          <div class="ingest-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between" data-category="supplier">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold text-amber-600">SOURCE 02</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-800">SUPPLIER</span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-base">Supplier Dispatch Events</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Local Dataset • supplier_events.csv</p>
+              
+              <div class="mt-4 p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-amber-800">Key Signal:</span>
+                  <span class="font-bold text-amber-900 font-mono">+38h Dispatch Slip</span>
+                </div>
+                <div class="text-[11px] text-amber-700 mt-1">Supplier Route B experienced canal congestion and unannounced transit delay.</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+              <span class="text-[11px] text-amber-700 font-medium">Disruption Flagged</span>
+              <button onclick="goToSlide(3)" class="text-xs font-bold text-amber-700 hover:underline">
+                Inspect →
+              </button>
+            </div>
+          </div>
+
+          <!-- Source 3: Inventory -->
+          <div class="ingest-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between" data-category="inventory">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold text-indigo-600">SOURCE 03</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-indigo-100 text-indigo-800">INVENTORY</span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-base">Inventory &amp; Stock Logs</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Local Dataset • inventory_levels.json</p>
+              
+              <div class="mt-4 p-3 bg-indigo-50/70 border border-indigo-200/60 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-indigo-800">Key Signal:</span>
+                  <span class="font-bold text-indigo-900 font-mono">Hub 2 Stock Deficit</span>
+                </div>
+                <div class="text-[11px] text-indigo-700 mt-1">Low stock alerts triggered for high-demand apparel SKUs during promotional window.</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+              <span class="text-[11px] text-indigo-600 font-medium">Stock Levels Synced</span>
+              <button onclick="goToSlide(3)" class="text-xs font-bold text-indigo-700 hover:underline">
+                Inspect →
+              </button>
+            </div>
+          </div>
+
+          <!-- Source 4: Payments -->
+          <div class="ingest-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between" data-category="inventory">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold text-slate-600">SOURCE 04</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 text-slate-800">PAYMENTS</span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-base">Payment Gateway Logs</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Local Dataset • payment_gateway.log</p>
+              
+              <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Key Signal:</span>
+                  <span class="font-bold text-slate-800 font-mono">12 Auth Timeouts</span>
+                </div>
+                <div class="text-[11px] text-slate-600 mt-1">Minor gateway error blip occurred during checkout authorization peak.</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+              <span class="text-[11px] text-slate-600 font-medium">Potential Noise</span>
+              <button onclick="goToSlide(3)" class="text-xs font-bold text-slate-700 hover:underline">
+                Inspect →
+              </button>
+            </div>
+          </div>
+
+          <!-- Source 5: Support Tickets -->
+          <div class="ingest-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between" data-category="support">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold text-purple-600">SOURCE 05</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-100 text-purple-800">SUPPORT</span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-base">Support Ticket Stream</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Local Dataset • support_tickets.json</p>
+              
+              <div class="mt-4 p-3 bg-purple-50/70 border border-purple-200/60 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-purple-800">Key Signal:</span>
+                  <span class="font-bold text-purple-900 font-mono">+210% Delay Inquiries</span>
+                </div>
+                <div class="text-[11px] text-purple-700 mt-1">Customer complaints focused on "Delivery Status Delayed" prior to cancellation.</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+              <span class="text-[11px] text-purple-600 font-medium">Feedback Correlated</span>
+              <button onclick="goToSlide(3)" class="text-xs font-bold text-purple-700 hover:underline">
+                Inspect →
+              </button>
+            </div>
+          </div>
+
+          <!-- Source 6: Competitor Prices -->
+          <div class="ingest-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between" data-category="support">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold text-emerald-600">SOURCE 06</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">MARKET</span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-base">Competitor Pricing Feed</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Local Dataset • competitor_prices.csv</p>
+              
+              <div class="mt-4 p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-emerald-800">Key Signal:</span>
+                  <span class="font-bold text-emerald-900 font-mono">-12% Competitor Promo</span>
+                </div>
+                <div class="text-[11px] text-emerald-700 mt-1">Competitor started a flash promotion on matching SKU categories.</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+              <span class="text-[11px] text-emerald-600 font-medium">Market Feed Synced</span>
+              <button onclick="goToSlide(3)" class="text-xs font-bold text-emerald-700 hover:underline">
+                Inspect →
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Summary Bar -->
+        <div class="bg-slate-900 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800 shadow-lg">
+          <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+              <p class="font-bold text-sm text-white">Form competing explanations from these 6 evidence sources?</p>
+              <p class="text-xs text-slate-400">CasualCourt generates 4 competing hypotheses to test against evidence.</p>
+            </div>
+          </div>
+          <button onclick="goToSlide(3)" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow">View Competing Suspects (Section 3) →</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 3: SUSPECTS -->
+    <!-- ========================================== -->
+    <section id="slide-3" class="slide-panel hidden-slide">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 border border-blue-200">SECTION 03 / 07</span>
+              <span class="text-xs font-mono bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg font-bold">
+                4 COMPETING HYPOTHESES
+              </span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">
+              What could be causing it?
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">
+              CasualCourt formulates competing explanations to prevent confirmation bias and premature blame.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="goToSlide(2)" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">
+              ← Evidence
+            </button>
+            <button onclick="goToSlide(4)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-blue-500/20 transition">
+              Analyze Forensics (Section 4) →
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Competing Explanations Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Suspect 1 -->
+          <div class="bg-white p-6 rounded-2xl border-2 border-blue-500/80 shadow-sm flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+              LEADING HYPOTHESIS
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">#1</span>
+                <h3 class="text-xl font-bold text-slate-900">Supplier / Delivery Disruption</h3>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">
+                Unannounced transit delays on Supplier Route B (+38h slip) caused extended fulfillment windows, leading frustrated customers to cancel orders.
+              </p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Evidence Alignment:</span>
+                  <span class="font-bold text-blue-700 font-mono">High (Supplier Logs &amp; Support Tickets)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Initial Assessment:</span>
+                  <span class="font-bold text-slate-800">Primary Suspect</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-medium">Requires Counter-Challenge</span>
+              <button onclick="goToSlide(5)" class="font-bold text-blue-600 hover:underline">
+                Challenge Test →
+              </button>
+            </div>
+          </div>
+
+          <!-- Suspect 2 -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center">#2</span>
+                <h3 class="text-xl font-bold text-slate-900">Inventory Shortage</h3>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">
+                Regional stock deficits at Hub 2 created fulfillment backorders and delayed shipment dispatches.
+              </p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Evidence Alignment:</span>
+                  <span class="font-bold text-indigo-700 font-mono">Moderate (Inventory Stock Logs)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Initial Assessment:</span>
+                  <span class="font-bold text-slate-800">Contributing Factor</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-medium">Requires Cross-Source Verification</span>
+              <button onclick="goToSlide(4)" class="font-bold text-blue-600 hover:underline">
+                Forensics Trace →
+              </button>
+            </div>
+          </div>
+
+          <!-- Suspect 3 -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center">#3</span>
+                <h3 class="text-xl font-bold text-slate-900">Payment Gateway Failure</h3>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">
+                Payment authentication timeouts caused checkout order processing failures during peak sales hours.
+              </p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Evidence Alignment:</span>
+                  <span class="font-bold text-amber-700 font-mono">Low (12 Auth Timeouts Logged)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Initial Assessment:</span>
+                  <span class="font-bold text-slate-800">Noisy / Conflicting Signal</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-medium">To be disambiguated</span>
+              <button onclick="goToSlide(4)" class="font-bold text-blue-600 hover:underline">
+                Noise Analysis →
+              </button>
+            </div>
+          </div>
+
+          <!-- Suspect 4 -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center">#4</span>
+                <h3 class="text-xl font-bold text-slate-900">Competitor Pricing</h3>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">
+                Competitor price drop (-12% promo) led customers to cancel existing orders and repurchase elsewhere.
+              </p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Evidence Alignment:</span>
+                  <span class="font-bold text-emerald-700 font-mono">Weak (Timeline Mismatch)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Initial Assessment:</span>
+                  <span class="font-bold text-slate-800">Weak Alternative</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-medium">Temporal test pending</span>
+              <button onclick="goToSlide(5)" class="font-bold text-blue-600 hover:underline">
+                Test Timeline →
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 4: FORENSICS -->
+    <!-- ========================================== -->
+        <!-- ========================================== -->
+    <!-- SECTION 4: FORENSICS WORKSPACE -->
+    <!-- ========================================== -->
+    <section id="slide-4" class="slide-panel hidden-slide">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 border border-blue-200">FORENSIC ANALYSIS</span>
+              <span class="text-xs font-mono bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg font-bold">
+                EVIDENCE TRAIL ANALYSIS
+              </span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">
+              What is the data telling us?
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">
+              Analyzing temporal patterns, segment exposure, cross-source consistency, signal quality, and cause vs effect relationships across evidence feeds.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+              5 Investigation Patterns Tested
+            </span>
+          </div>
+        </div>
+
+        <!-- 5 EXPANDABLE INVESTIGATION PATTERN CARDS -->
+        <div class="space-y-4">
+          
+          <!-- PATTERN 1: TEMPORAL PRECEDENCE -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300">
+            <!-- Collapsed Header Row (Always Visible & Clickable) -->
+            <button onclick="togglePattern(1)" class="w-full p-5 flex items-center justify-between text-left focus:outline-none bg-white hover:bg-slate-50/80 transition">
+              <div class="flex items-center gap-4 min-w-0">
+                <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 font-mono font-extrabold text-xs flex items-center justify-center border border-blue-200 shrink-0">
+                  01
+                </span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-bold text-slate-900 text-base">Temporal Precedence</h3>
+                    <span class="px-2 py-0.5 text-[10px] font-bold font-mono bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">
+                      PASSED
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">
+                    "Did the suspected cause occur before the anomaly?"
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 shrink-0 ml-4">
+                <span class="text-xs font-semibold text-blue-600 hidden sm:inline" id="pattern-status-text-1">Expand Details</span>
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 transition-transform duration-200" id="pattern-chevron-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </button>
+
+            <!-- Expanded Body (Hidden by Default) -->
+            <div id="pattern-body-1" class="hidden border-t border-slate-100 p-6 bg-slate-50/50 space-y-6">
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div class="p-4 bg-white rounded-xl border border-slate-200">
+                  <span class="text-slate-400 font-mono font-bold uppercase text-[10px]">WHAT WE TESTED</span>
+                  <p class="text-slate-700 font-medium mt-1 leading-relaxed">
+                    Compare timestamps of supplier transit events, inventory stock changes, checkout payment events, support tickets, and order cancellation activity.
+                  </p>
+                </div>
+
+                <div class="p-4 bg-white rounded-xl border border-slate-200">
+                  <span class="text-slate-400 font-mono font-bold uppercase text-[10px]">FINDING</span>
+                  <p class="text-emerald-800 font-bold mt-1 leading-relaxed">
+                    Supplier lead-time disruption occurred on Day 38 (2026-09-07), 4 days prior to the order cancellation spike onset on Day 42.
+                  </p>
+                </div>
+
+                <div class="p-4 bg-white rounded-xl border border-slate-200">
+                  <span class="text-slate-400 font-mono font-bold uppercase text-[10px]">WHY IT MATTERS</span>
+                  <p class="text-slate-700 font-medium mt-1 leading-relaxed">
+                    A suspected cause appearing before the anomaly provides strong temporal alignment, unlike signals that occur afterward.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Disclaimer -->
+              <div class="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 font-medium flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span><strong>Temporal Precedence Note:</strong> Temporal precedence supports the hypothesis but does not prove causality by itself.</span>
+              </div>
+
+              <!-- Simple Timeline Visualization -->
+              <div class="bg-slate-900 text-white rounded-2xl p-6 border border-slate-800 space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-white uppercase tracking-wider text-[10px]">CHRONOLOGICAL TIMELINE SEQUENCE</span>
+                  <span class="text-slate-400 font-mono">Day 38 → Day 44</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs pt-2">
+                  <div class="p-3 bg-slate-800 rounded-xl border border-blue-500/40">
+                    <span class="text-[10px] font-mono text-blue-300 font-bold">DAY 38 (2026-09-07)</span>
+                    <p class="font-bold text-white mt-1">Supplier Disruption</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Supplier B transit slip (+4.85 days)</p>
+                  </div>
+
+                  <div class="p-3 bg-slate-800 rounded-xl border border-indigo-500/40">
+                    <span class="text-[10px] font-mono text-indigo-300 font-bold">DAY 41 (2026-09-10)</span>
+                    <p class="font-bold text-white mt-1">Inventory Depletion</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5">SKU-B1 stock drops to 21 units</p>
+                  </div>
+
+                  <div class="p-3 bg-slate-800 rounded-xl border border-red-500/40">
+                    <span class="text-[10px] font-mono text-red-300 font-bold">DAY 42 (2026-09-11)</span>
+                    <p class="font-bold text-white mt-1">Cancellation Increase</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Spike onset to 19.4% cancellation rate</p>
+                  </div>
+
+                  <div class="p-3 bg-slate-800 rounded-xl border border-amber-500/40">
+                    <span class="text-[10px] font-mono text-amber-300 font-bold">DAY 44 (2026-09-13)</span>
+                    <p class="font-bold text-white mt-1">Customer Complaints</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Late-delivery support tickets surge</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- PATTERN 2: EXPOSURE / SEGMENT TEST -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300">
+            <!-- Collapsed Header Row -->
+            <button onclick="togglePattern(2)" class="w-full p-5 flex items-center justify-between text-left focus:outline-none bg-white hover:bg-slate-50/80 transition">
+              <div class="flex items-center gap-4 min-w-0">
+                <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 font-mono font-extrabold text-xs flex items-center justify-center border border-blue-200 shrink-0">
+                  02
+                </span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-bold text-slate-900 text-base">Exposure / Segment Test</h3>
+                    <span class="px-2 py-0.5 text-[10px] font-bold font-mono bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">
+                      PASSED
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">
+                    "Did exposed groups experience the anomaly more strongly?"
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 shrink-0 ml-4">
+                <span class="text-xs font-semibold text-blue-600 hidden sm:inline" id="pattern-status-text-2">Expand Details</span>
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 transition-transform duration-200" id="pattern-chevron-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </button>
+
+            <!-- Expanded Body -->
+            <div id="pattern-body-2" class="hidden border-t border-slate-100 p-6 bg-slate-50/50 space-y-6">
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div class="p-4 bg-white rounded-xl border border-slate-200">
+                  <span class="text-slate-400 font-mono font-bold uppercase text-[10px]">WHAT WE TESTED</span>
+                  <p class="text-slate-700 font-medium mt-1 leading-relaxed">
+                    Compare orders associated with the suspected supplier (Supplier B Route) against comparable orders from unaffected suppliers (Suppliers A &amp; C).
+                  </p>
+                </div>
+
+                <div class="p-4 bg-white rounded-xl border border-slate-200">
+                  <span class="text-slate-400 font-mono font-bold uppercase text-[10px]">FINDING</span>
+                  <p class="text-emerald-800 font-bold mt-1 leading-relaxed">
+                    Orders exposed to Supplier B disruption show a substantially stronger cancellation rate (42.6%) vs unexposed orders (9.0%).
+                  </p>
+                </div>
+
+                <div class="p-4 bg-white rounded-xl border border-slate-200">
+                  <span class="text-slate-400 font-mono font-bold uppercase text-[10px]">WHY IT MATTERS</span>
+                  <p class="text-slate-700 font-medium mt-1 leading-relaxed">
+                    When the anomaly is heavily concentrated among exposed groups while unexposed groups remain stable, hypothesis confidence increases.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Exposed vs Unaffected Visual Comparison -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div class="p-5 bg-red-50/70 rounded-2xl border border-red-200">
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-red-900 text-sm">EXPOSED SEGMENT (Supplier B Route)</span>
+                    <span class="px-2 py-0.5 bg-red-100 text-red-800 font-mono text-[10px] font-bold rounded">HIGH IMPACT</span>
+                  </div>
+                  <div class="mt-3 flex items-baseline gap-2">
+                    <span class="text-3xl font-extrabold text-red-700 font-mono">42.6%</span>
+                    <span class="text-xs text-red-800 font-semibold">Cancellation Rate</span>
+                  </div>
+                  <p class="text-xs text-red-900/80 mt-2">
+                    Affected orders: 612 out of 1,436 total exposed orders canceled.
+                  </p>
+                </div>
+
+                <div class="p-5 bg-emerald-50/70 rounded-2xl border border-emerald-200">
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-emerald-900 text-sm">UNAFFECTED SEGMENT (Suppliers A &amp; C)</span>
+                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold rounded">BASELINE NORMAL</span>
+                  </div>
+                  <div class="mt-3 flex items-baseline gap-2">
+                    <span class="text-3xl font-extrabold text-emerald-700 font-mono">9.0%</span>
+                    <span class="text-xs text-emerald-800 font-semibold">Cancellation Rate</span>
+                  </div>
+                  <p class="text-xs text-emerald-900/80 mt-2">
+                    Control orders: Cancellation rate stayed near baseline threshold.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- PATTERN 3: CROSS-SOURCE CONSISTENCY -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300">
+            <!-- Collapsed Header Row -->
+            <button onclick="togglePattern(3)" class="w-full p-5 flex items-center justify-between text-left focus:outline-none bg-white hover:bg-slate-50/80 transition">
+              <div class="flex items-center gap-4 min-w-0">
+                <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 font-mono font-extrabold text-xs flex items-center justify-center border border-blue-200 shrink-0">
+                  03
+                </span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-bold text-slate-900 text-base">Cross-Source Consistency</h3>
+                    <span class="px-2 py-0.5 text-[10px] font-bold font-mono bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">
+                      PASSED
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">
+                    "Do independent evidence sources tell the same story?"
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 shrink-0 ml-4">
+                <span class="text-xs font-semibold text-blue-600 hidden sm:inline" id="pattern-status-text-3">Expand Details</span>
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 transition-transform duration-200" id="pattern-chevron-3">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </button>
+
+            <!-- Expanded Body -->
+            <div id="pattern-body-3" class="hidden border-t border-slate-100 p-6 bg-slate-50/50 space-y-6">
+              
+              <div class="space-y-3 text-xs">
+                <span class="font-bold text-slate-900 uppercase tracking-wider text-[10px] block mb-1">INDEPENDENT SOURCES CHECKED</span>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="p-3.5 bg-white rounded-xl border border-slate-200 flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0 text-xs">✓</span>
+                    <div>
+                      <span class="font-bold text-slate-900">Supplier Events:</span>
+                      <p class="text-slate-600 mt-0.5">Lead times increased by +4.85 days on Route B on Day 38.</p>
+                    </div>
+                  </div>
+
+                  <div class="p-3.5 bg-white rounded-xl border border-slate-200 flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0 text-xs">✓</span>
+                    <div>
+                      <span class="font-bold text-slate-900">Inventory Logs:</span>
+                      <p class="text-slate-600 mt-0.5">Affected SKU-B1 stock declined to 21 units at Hub 2 on Day 41.</p>
+                    </div>
+                  </div>
+
+                  <div class="p-3.5 bg-white rounded-xl border border-slate-200 flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0 text-xs">✓</span>
+                    <div>
+                      <span class="font-bold text-slate-900">Order Logs:</span>
+                      <p class="text-slate-600 mt-0.5">Cancellation rate surged to 42.6% specifically for exposed orders.</p>
+                    </div>
+                  </div>
+
+                  <div class="p-3.5 bg-white rounded-xl border border-slate-200 flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0 text-xs">✓</span>
+                    <div>
+                      <span class="font-bold text-slate-900">Customer Tickets:</span>
+                      <p class="text-slate-600 mt-0.5">Late-delivery complaints spiked starting on Day 44.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-semibold">
+                <strong>Conclusion:</strong> Multiple independent data sources corroborate the supplier disruption explanation without conflicting signals.
+              </div>
+
+            </div>
+          </div>
+
+          <!-- PATTERN 4: SIGNAL QUALITY / NOISE CHECK -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300">
+            <!-- Collapsed Header Row -->
+            <button onclick="togglePattern(4)" class="w-full p-5 flex items-center justify-between text-left focus:outline-none bg-white hover:bg-slate-50/80 transition">
+              <div class="flex items-center gap-4 min-w-0">
+                <span class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 font-mono font-extrabold text-xs flex items-center justify-center border border-amber-200 shrink-0">
+                  04
+                </span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-bold text-slate-900 text-base">Signal Quality / Noise Check</h3>
+                    <span class="px-2 py-0.5 text-[10px] font-bold font-mono bg-amber-100 text-amber-800 rounded-full border border-amber-200">
+                      WARNING / MIXED
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">
+                    "Is the evidence reliable, or could the signal be misleading?"
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 shrink-0 ml-4">
+                <span class="text-xs font-semibold text-blue-600 hidden sm:inline" id="pattern-status-text-4">Expand Details</span>
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 transition-transform duration-200" id="pattern-chevron-4">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </button>
+
+            <!-- Expanded Body -->
+            <div id="pattern-body-4" class="hidden border-t border-slate-100 p-6 bg-slate-50/50 space-y-6">
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div class="p-4 bg-emerald-50/70 rounded-xl border border-emerald-200">
+                  <span class="font-bold text-emerald-900 uppercase tracking-wider text-[10px]">SUPPORTING SIGNAL</span>
+                  <p class="text-emerald-900 font-medium mt-1 leading-relaxed">
+                    Payment/refund-related support tickets increased (+40%) during the anomaly window.
+                  </p>
+                </div>
+
+                <div class="p-4 bg-amber-50/70 rounded-xl border border-amber-200">
+                  <span class="font-bold text-amber-900 uppercase tracking-wider text-[10px]">CONFLICTING SIGNAL</span>
+                  <p class="text-amber-900 font-medium mt-1 leading-relaxed">
+                    Payment transaction gateway authorization logs remained 99.0% healthy with zero gateway outage.
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
+                <span class="font-bold text-slate-900 uppercase tracking-wider text-[10px]">NOISE INDICATORS IDENTIFIED</span>
+                <ul class="space-y-1.5 text-slate-600">
+                  <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">•</span> Duplicate support tickets logged for single order inquiries</li>
+                  <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">•</span> Mislabeled support tags categorizing delayed order refund inquiries as "payment issues"</li>
+                  <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">•</span> Support ticket surge occurred on Day 44, post-dating cancellation onset (Day 42)</li>
+                  <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">•</span> Payment authorization success rates remained at 99.0% baseline</li>
+                </ul>
+              </div>
+
+              <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 font-semibold">
+                <strong>Conclusion:</strong> Payment-related tickets are treated as noisy/secondary evidence rather than primary root-cause evidence. CasualCourt does NOT blindly trust every signal feed.
+              </div>
+
+            </div>
+          </div>
+
+          <!-- PATTERN 5: CAUSE VS EFFECT ANALYSIS -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300">
+            <!-- Collapsed Header Row -->
+            <button onclick="togglePattern(5)" class="w-full p-5 flex items-center justify-between text-left focus:outline-none bg-white hover:bg-slate-50/80 transition">
+              <div class="flex items-center gap-4 min-w-0">
+                <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 font-mono font-extrabold text-xs flex items-center justify-center border border-blue-200 shrink-0">
+                  05
+                </span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-bold text-slate-900 text-base">Cause vs Effect Analysis</h3>
+                    <span class="px-2 py-0.5 text-[10px] font-bold font-mono bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">
+                      PASSED
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">
+                    "Could the signal actually be a downstream effect?"
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 shrink-0 ml-4">
+                <span class="text-xs font-semibold text-blue-600 hidden sm:inline" id="pattern-status-text-5">Expand Details</span>
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 transition-transform duration-200" id="pattern-chevron-5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </button>
+
+            <!-- Expanded Body -->
+            <div id="pattern-body-5" class="hidden border-t border-slate-100 p-6 bg-slate-50/50 space-y-6">
+              
+              <!-- Causal Relationship Flow Diagram -->
+              <div class="bg-slate-900 text-white p-6 rounded-2xl border border-slate-800 space-y-3 text-xs">
+                <span class="font-bold text-white uppercase tracking-wider text-[10px]">CAUSAL RELATIONSHIP SEQUENCE</span>
+                
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+                  <div class="p-3 bg-slate-800 rounded-xl border border-blue-500/40 text-center flex-1 min-w-[120px]">
+                    <span class="text-[10px] text-blue-300 font-mono font-bold block">ROOT CAUSE</span>
+                    <span class="font-bold text-white mt-1 block">Supplier Disruption</span>
+                  </div>
+
+                  <span class="text-slate-400 font-bold">→</span>
+
+                  <div class="p-3 bg-slate-800 rounded-xl border border-indigo-500/40 text-center flex-1 min-w-[120px]">
+                    <span class="text-[10px] text-indigo-300 font-mono font-bold block">MEDIATOR</span>
+                    <span class="font-bold text-white mt-1 block">Inventory Pressure</span>
+                  </div>
+
+                  <span class="text-slate-400 font-bold">→</span>
+
+                  <div class="p-3 bg-slate-800 rounded-xl border border-amber-500/40 text-center flex-1 min-w-[120px]">
+                    <span class="text-[10px] text-amber-300 font-mono font-bold block">OPERATIONAL IMPACT</span>
+                    <span class="font-bold text-white mt-1 block">Fulfillment Delays</span>
+                  </div>
+
+                  <span class="text-slate-400 font-bold">→</span>
+
+                  <div class="p-3 bg-slate-800 rounded-xl border border-red-500/40 text-center flex-1 min-w-[120px]">
+                    <span class="text-[10px] text-red-300 font-mono font-bold block">PRIMARY ANOMALY</span>
+                    <span class="font-bold text-white mt-1 block">Order Cancellations</span>
+                  </div>
+
+                  <span class="text-slate-400 font-bold">→</span>
+
+                  <div class="p-3 bg-slate-800 rounded-xl border border-slate-700 text-center flex-1 min-w-[120px]">
+                    <span class="text-[10px] text-slate-400 font-mono font-bold block">DOWNSTREAM EFFECT</span>
+                    <span class="font-bold text-slate-300 mt-1 block">Refund Support Tickets</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
+                <span class="font-bold text-slate-900 uppercase tracking-wider text-[10px]">ANALYSIS SUMMARY</span>
+                <p class="text-slate-700 leading-relaxed">
+                  Inventory depletion acts as a contributing mediator rather than the independent root cause. Customer complaints and refund inquiry tickets appear later in the sequence and represent downstream symptoms rather than independent triggers.
+                </p>
+              </div>
+
+              <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-medium flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span><strong>Assessment:</strong> Most consistent with the available evidence.</span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+<section id="slide-5" class="slide-panel hidden-slide">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm">HERO FEATURE • SECTION 05 / 07</span>
+              <span class="text-xs font-mono bg-purple-50 text-purple-700 px-2.5 py-1 rounded-lg font-bold border border-purple-200">
+                COUNTER-HYPOTHESIS CHALLENGE
+              </span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight" id="val-challenge-header-title">
+              Before we blame the supplier...
+            </h1>
+            <p class="text-base font-semibold text-blue-700 mt-0.5" id="val-challenge-header-sub">
+              Can the leading explanation survive a challenge?
+            </p>
+            <p class="text-xs text-slate-500 mt-1">
+              CasualCourt actively stress-tests the leading hypothesis against 4 counter-evidence tests before issuing a verdict.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="goToSlide(4)" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">
+              ← Forensics
+            </button>
+            <button onclick="goToSlide(6)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-blue-500/20 transition">
+              See Verdict (Section 6) →
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Stress Tests Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="val-challenge-tests-grid">
+          
+          <!-- Test 1 -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-400 transition">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-mono text-xs font-bold text-blue-700">TEST 01</span>
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200">SUPPORT</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-lg">Temporal Challenge</h3>
+              <p class="text-xs text-slate-500 mt-1">Did the suspected cause occur before the anomaly?</p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1.5">
+                <div class="text-[11px] text-emerald-700 font-semibold mt-1">
+                  ✓ Supplier B lead time jumped on Day 38 (2026-09-07), 4 days BEFORE cancellation spike onset on Day 42 (2026-09-11).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test 2 -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-400 transition">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-mono text-xs font-bold text-blue-700">TEST 02</span>
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200">ISOLATED EXPOSURE CONFIRMED</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-lg">Exposure Challenge</h3>
+              <p class="text-xs text-slate-500 mt-1">Did the affected segment actually experience more cancellations?</p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1.5">
+                <div class="text-[11px] text-emerald-700 font-semibold mt-1">
+                  ✓ Orders exposed to Supplier B suffered a 45.2% cancellation rate vs 7.4% for unexposed suppliers (+37.8 percentage points).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test 3 -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-400 transition">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-mono text-xs font-bold text-blue-700">TEST 03</span>
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-100 text-amber-800 border border-amber-200">REJECTED ALTERNATIVE</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-lg">Alternative Explanation</h3>
+              <p class="text-xs text-slate-500 mt-1">Can another hypothesis explain the anomaly better?</p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1.5">
+                <div class="text-[11px] text-amber-800 font-semibold mt-1">
+                  ✓ Competitor price drop occurred on Day 48, 6 days AFTER spike onset. Payment gateway success remained healthy at 98.8%.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test 4 -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-400 transition">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-mono text-xs font-bold text-blue-700">TEST 04</span>
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200">NO CONTRADICTION</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-lg">Contradiction Test</h3>
+              <p class="text-xs text-slate-500 mt-1">Is there strong evidence that directly contradicts the leader?</p>
+
+              <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1.5">
+                <div class="text-[11px] text-emerald-700 font-semibold mt-1">
+                  ✓ No evidence contradicts Supplier / Delivery Disruption as the primary cause.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- WHAT WOULD CHANGE OUR MIND? (FALSIFICATION CONDITIONS) -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md text-white">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 font-mono">
+                FALSIFICATION FRAMEWORK
+              </span>
+              <h3 class="text-base font-bold text-white">What Would Change Our Mind?</h3>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">Concrete Disproof Conditions</span>
+          </div>
+          <p class="text-xs text-slate-300 mb-4">
+            CasualCourt generates concrete conditions that would invalidate or weaken the leading explanation:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="val-falsification-grid">
+            <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-slate-200 flex items-start space-x-2.5">
+              <span class="text-amber-400 font-bold text-sm shrink-0">↳</span>
+              <span>The supplier explanation would weaken if unaffected suppliers showed the same cancellation increase.</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-slate-200 flex items-start space-x-2.5">
+              <span class="text-amber-400 font-bold text-sm shrink-0">↳</span>
+              <span>It would weaken if payment failures increased before order cancellations started on Day 42.</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-slate-200 flex items-start space-x-2.5">
+              <span class="text-amber-400 font-bold text-sm shrink-0">↳</span>
+              <span>It would weaken if competitor price drops occurred prior to the onset of the cancellation spike.</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-slate-200 flex items-start space-x-2.5">
+              <span class="text-amber-400 font-bold text-sm shrink-0">↳</span>
+              <span>It would weaken if regional inventory logs confirmed stock levels remained above safety buffer thresholds.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- HERO TEST RESULT BANNER -->
+        <div class="bg-slate-900 text-white p-6 rounded-2xl border border-slate-800 shadow-lg flex flex-col md:flex-row justify-between items-center gap-6">
+          <div class="flex items-center space-x-4">
+            <div id="val-challenge-banner-icon" class="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-extrabold text-xl font-mono shrink-0">
+              ✓
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="val-challenge-status-badge" class="px-2.5 py-0.5 text-xs font-bold bg-emerald-500 text-slate-950 rounded-full font-mono">CASE SURVIVED</span>
+                <span class="text-xs text-slate-400">All 4 counter-tests completed</span>
+              </div>
+              <h3 id="val-challenge-status-title" class="text-lg font-bold text-white mt-1">Leading Hypothesis Survived Challenge</h3>
+              <p id="val-challenge-status-desc" class="text-xs text-slate-300 mt-0.5">
+                Supplier / Delivery Disruption survived temporal, exposure, alternative, and contradiction testing.
+              </p>
+            </div>
+          </div>
+
+          <button onclick="goToSlide(6)" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition whitespace-nowrap">
+            View Auditable Verdict (Section 6) →
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 6: VERDICT -->
+    <!-- ========================================== -->
+    <section id="slide-6" class="slide-panel hidden-slide">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 border border-blue-200">SECTION 06 / 07</span>
+              <span class="text-xs font-mono bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg font-bold">
+                AUDITABLE VERDICT SYNTHESIZED
+              </span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">
+              The Verdict
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">
+              Final cause classification, confidence synthesis, and recommended business actions.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="goToSlide(5)" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">
+              ← Challenge
+            </button>
+            <button onclick="goToSlide(7)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-blue-500/20 transition">
+              Audit Ledger (Section 7) →
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Verdict Classification Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          <div class="bg-white p-5 rounded-2xl border-2 border-blue-500 shadow-sm">
+            <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded border border-blue-200">PRIMARY CAUSE</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-2">Supplier / Delivery Disruption</h3>
+            <p class="text-xs text-slate-500 mt-1">Unannounced +38h canal transit slip on Supplier B route.</p>
+            <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-blue-700 font-semibold">
+              ✓ Survived all 4 counter-tests
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">CONTRIBUTING FACTOR</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-2">Inventory Shortage</h3>
+            <p class="text-xs text-slate-500 mt-1">Hub 2 regional stockouts created fulfillment backorder slip.</p>
+            <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-indigo-700 font-semibold">
+              ● Exacerbated delivery delays
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded border border-amber-200">NOISY SIGNAL</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-2">Payment Support Tickets</h3>
+            <p class="text-xs text-slate-500 mt-1">Coincidental 12 payment auth timeouts during peak checkout.</p>
+            <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-amber-700 font-semibold">
+              ▲ Disambiguated (&lt;1.5% impact)
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded border border-slate-200">WEAK ALTERNATIVE</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-2">Competitor Pricing</h3>
+            <p class="text-xs text-slate-500 mt-1">-12% promo dropped 18h after cancellation spike began.</p>
+            <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 font-semibold">
+              × Rejected by temporal test
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Confidence & Recommended Actions Box -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">INVESTIGATION CONFIDENCE</span>
+              <h3 class="text-2xl font-extrabold text-slate-900 mt-1">High Evidence Alignment</h3>
+              <p class="text-xs text-slate-500 mt-1">Score calculated from multi-source cross-verification.</p>
+              
+              <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Cross-Source Match:</span>
+                  <span class="font-bold text-blue-700 font-mono">6 of 6 Sources</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Challenge Test Pass:</span>
+                  <span class="font-bold text-emerald-700 font-mono">4 of 4 Tests</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Conflicting Noise:</span>
+                  <span class="font-bold text-slate-700 font-mono">Disambiguated</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+              <span class="text-[11px] text-slate-400 font-mono">Auditable &amp; Non-Probabilistic</span>
+            </div>
+          </div>
+
+          <!-- What should the business do next? -->
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg">What should the business do next?</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Recommended actions based on verified root cause verdict.</p>
+
+              <div class="mt-4 space-y-3">
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-start space-x-3">
+                  <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+                  <div>
+                    <strong class="text-xs font-bold text-slate-900">Enforce Supplier SLA Penalties &amp; Reroute</strong>
+                    <p class="text-xs text-slate-600 mt-0.5">Enforce carrier SLA penalty clauses for unreported transit slips on Supplier Route B.</p>
+                  </div>
+                </div>
+
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-start space-x-3">
+                  <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+                  <div>
+                    <strong class="text-xs font-bold text-slate-900">Reallocate Buffer Stock to Hub 1</strong>
+                    <p class="text-xs text-slate-600 mt-0.5">Transfer safety inventory to Hub 1 to bypass Supplier B bottlenecks for express orders.</p>
+                  </div>
+                </div>
+
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-start space-x-3">
+                  <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
+                  <div>
+                    <strong class="text-xs font-bold text-slate-900">Proactive Customer Delay Notifications</strong>
+                    <p class="text-xs text-slate-600 mt-0.5">Notify customers of delay status proactively before order cancellation thresholds are breached.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
+              <span class="text-xs text-slate-500">Ready to inspect the audit ledger?</span>
+              <button onclick="goToSlide(7)" class="text-xs font-bold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition shadow">
+                View Audit Ledger (Section 7) →
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 7: AUDIT -->
+    <!-- ========================================== -->
+    <section id="slide-7" class="slide-panel hidden-slide">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 border border-blue-200">SECTION 07 / 07</span>
+              <span class="text-xs font-mono bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg font-bold">
+                AUDITABLE EVIDENCE LEDGER
+              </span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">
+              Why did we reach this verdict?
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">
+              Complete auditable chain linking evidence sources, observations, tests, results, and cause classification.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="goToSlide(6)" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">
+              ← Verdict
+            </button>
+            <button onclick="goToSlide(1)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-blue-500/20 transition flex items-center gap-2">
+              ↻ Return to Case Overview (Section 1)
+            </button>
+          </div>
+        </div>
+
+        <!-- Evidence Ledger Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="font-bold text-slate-900 text-base">Auditable Evidence Ledger</h3>
+            <span class="text-xs text-slate-500 font-mono">Case #CASE-2024-8849</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
+                <tr>
+                  <th class="p-4">Evidence Source</th>
+                  <th class="p-4">Observation</th>
+                  <th class="p-4">Test Performed</th>
+                  <th class="p-4">Result</th>
+                  <th class="p-4">Impact</th>
+                  <th class="p-4">Classification</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100" id="auditLedgerTableBody">
+                <tr class="hover:bg-slate-50/80 transition">
+                  <td class="p-4 font-bold text-slate-900">Supplier Events (supplier_events.csv)</td>
+                  <td class="p-4 text-slate-600">+38h Canal Transit Slip on Route B</td>
+                  <td class="p-4 font-mono text-slate-700">Temporal Test</td>
+                  <td class="p-4"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">PASSED</span></td>
+                  <td class="p-4 font-bold text-red-600">HIGH</td>
+                  <td class="p-4"><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">PRIMARY CAUSE</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- INVESTIGATION EXECUTION TRACE (ORCHESTRATION LAYER AUDIT) -->
+        <div class="bg-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-md">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-2">
+            <div class="flex items-center space-x-3">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">
+                ORCHESTRATION TRACE
+              </span>
+              <h3 class="text-base font-bold text-white">Investigation Execution Trace</h3>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">11-Step Deterministic Sequence</span>
+          </div>
+          <p class="text-xs text-slate-300 mb-4">
+            Step-by-step decision audit trace recorded during automated investigation orchestration:
+          </p>
+
+          <div class="space-y-3 text-xs" id="investigationTraceList">
+            <!-- 11 Trace steps populated dynamically by updateUIWithEngineResult(data) -->
+          </div>
+        </div>
+
+
+        <!-- Export & Navigation -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">Export Case &amp; Audit Artifacts</h4>
+            <p class="text-xs text-slate-500">Download auditable investigation dossier for executive review.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="downloadAuditReport()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition">
+              Download Audit Report (JSON)
+            </button>
+            <button onclick="goToSlide(1)" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition">
+              ↻ Return to Section 1
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  
+    <!-- ========================================== -->
+    <!-- SECTION 8: TUTORIAL / ONBOARDING PAGE -->
+    <!-- ========================================== -->
+    <section id="slide-8" class="slide-panel hidden-slide">
+      <div class="flex flex-col gap-8">
+        
+        <!-- Tutorial Hero / Introduction Card -->
+        <div class="bg-slate-900 text-white p-8 rounded-3xl border border-slate-800 shadow-xl relative overflow-hidden">
+          <div class="absolute -right-16 -top-16 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute left-1/2 bottom-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="relative z-10 max-w-3xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold tracking-wider uppercase mb-4">
+              <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+              NEW TO CASUALCOURT?
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
+              Investigate Root Causes with Explainable Evidence
+            </h1>
+            <p class="text-slate-300 text-sm md:text-base mt-3 leading-relaxed">
+              CasualCourt investigates unusual business problems by connecting evidence from fragmented operational sources, testing competing explanations, and producing an auditable, explainable verdict.
+            </p>
+            
+            <div class="mt-6 flex flex-wrap items-center gap-4">
+              <button onclick="navigateTo('case')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+                Launch Live Demo Case →
+              </button>
+              <button onclick="openUploadModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-semibold text-xs transition flex items-center gap-2">
+                Upload Your Data (CSV)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4-STEP ONBOARDING WORKFLOW -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">How CasualCourt Works in 4 Steps</h2>
+              <p class="text-xs text-slate-500">Autonomous evidence-weighted investigation framework</p>
+            </div>
+            <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+              OPERATIONAL WORKFLOW
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Step 1 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-300 transition">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-extrabold text-xs flex items-center justify-center font-mono">01</span>
+                  <span class="text-[10px] font-mono text-slate-400 uppercase font-bold">DATA FEEDS</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-sm">Bring Your Evidence</h3>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                  Connect operational CSV feeds such as order logs, payment transactions, supplier transit events, inventory levels, customer tickets, and pricing data.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+                Feeds: 6 Heterogeneous Sources
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-amber-300 transition">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 font-extrabold text-xs flex items-center justify-center font-mono">02</span>
+                  <span class="text-[10px] font-mono text-slate-400 uppercase font-bold">DETECTION</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-sm">Describe the Anomaly</h3>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                  Identify baseline shifts—such as order cancellation spikes, delivery delay surges, refund increases, complaint spikes, or revenue drops.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+                Baseline Variance Check
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-purple-300 transition">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 font-extrabold text-xs flex items-center justify-center font-mono">03</span>
+                  <span class="text-[10px] font-mono text-slate-400 uppercase font-bold">ANALYSIS</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-sm">Let CasualCourt Investigate</h3>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                  Formulates competing hypotheses, tests temporal precedence, evaluates exposure segmentation, detects noisy signals, and counter-challenges the leader.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+                4 Forensic Test Suites
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-emerald-300 transition">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-extrabold text-xs flex items-center justify-center font-mono">04</span>
+                  <span class="text-[10px] font-mono text-slate-400 uppercase font-bold">AUDIT VERDICT</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-sm">Get an Explainable Verdict</h3>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                  Receive a clear verdict ranking causes, confidence scores, evidence provenance, contradicting signal notes, and recommended business actions.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+                Auditable &amp; Non-Probabilistic
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 30-SECOND INTERACTIVE BUSINESS EXAMPLE CARD -->
+        <div class="bg-slate-900 text-white rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                30-SECOND EXAMPLE
+              </span>
+              <h3 class="text-xl font-extrabold text-white mt-2">Example: Your Order Cancellations Suddenly Increased</h3>
+            </div>
+            <span class="text-xs font-mono text-slate-400">Step-by-Step Resolution Flow</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3 text-xs">
+            <div class="p-4 bg-slate-800/80 rounded-2xl border border-slate-700">
+              <span class="text-[10px] font-mono text-slate-400 font-bold uppercase">NORMAL BASELINE</span>
+              <p class="font-bold text-slate-200 text-sm mt-1">8% Order Cancellation</p>
+              <p class="text-[11px] text-slate-400 mt-1">Standard baseline cancellation rate over 40 days.</p>
+            </div>
+
+            <div class="p-4 bg-slate-800/80 rounded-2xl border border-red-500/40">
+              <span class="text-[10px] font-mono text-red-400 font-bold uppercase">ANOMALY ONSET</span>
+              <p class="font-bold text-red-300 text-sm mt-1">Spike to 19.4%</p>
+              <p class="text-[11px] text-slate-400 mt-1">Order cancellations jump +11.4 points on Day 42.</p>
+            </div>
+
+            <div class="p-4 bg-slate-800/80 rounded-2xl border border-blue-500/40">
+              <span class="text-[10px] font-mono text-blue-300 font-bold uppercase">INVESTIGATION</span>
+              <p class="font-bold text-blue-200 text-sm mt-1">5 Evidence Streams</p>
+              <p class="text-[11px] text-slate-400 mt-1">Inspects supplier transit, inventory, payments, &amp; pricing.</p>
+            </div>
+
+            <div class="p-4 bg-slate-800/80 rounded-2xl border border-purple-500/40">
+              <span class="text-[10px] font-mono text-purple-300 font-bold uppercase">CHALLENGE TEST</span>
+              <p class="font-bold text-purple-200 text-sm mt-1">Payment Stress Test</p>
+              <p class="text-[11px] text-slate-400 mt-1">Did payment failures occur before cancellations? (No, gateway was 99% healthy).</p>
+            </div>
+
+            <div class="p-4 bg-slate-800/80 rounded-2xl border border-emerald-500/40">
+              <span class="text-[10px] font-mono text-emerald-400 font-bold uppercase">FINAL VERDICT</span>
+              <p class="font-bold text-emerald-300 text-sm mt-1">Supplier Disruption</p>
+              <p class="text-[11px] text-slate-400 mt-1">Supplier B lead time jump (+4.85d) was the primary cause.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- USE CASES GRID -->
+        <div>
+          <div class="mb-4">
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Where Can Companies Use CasualCourt?</h2>
+            <p class="text-xs text-slate-500">Cross-industry operational investigation applications</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- 1. E-Commerce -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-200">E-COMMERCE</span>
+                  <span class="text-[10px] font-mono text-slate-400">Retail &amp; D2C</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">Order Cancellation Spike</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Problem: Order cancellations suddenly surge.</p>
+                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                  CasualCourt cross-examines supplier delays → regional inventory stockouts → checkout payment errors → support complaint timing → competitor promos.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-blue-700 font-semibold">
+                Tested in Live Demo →
+              </div>
+            </div>
+
+            <!-- 2. Logistics -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200">LOGISTICS</span>
+                  <span class="text-[10px] font-mono text-slate-400">Supply Chain</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">Delivery Delay Spike</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Problem: Shipment transit times slip unexpectedly.</p>
+                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                  Investigates carrier dispatch logs, regional warehouse bottlenecks, route segment disruptions, stock levels, and weather/regional events.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                Route &amp; Carrier Isolation
+              </div>
+            </div>
+
+            <!-- 3. Fintech -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">FINTECH</span>
+                  <span class="text-[10px] font-mono text-slate-400">Payments</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">Transaction Failure Spike</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Problem: Checkout payment success drops.</p>
+                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                  Disambiguates payment gateway API timeouts, card network declines, regional banking outages, mobile app version issues, and transaction types.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                Gateway &amp; Auth Disambiguation
+              </div>
+            </div>
+
+            <!-- 4. Customer Support -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-50 text-amber-700 border border-amber-200">SUPPORT</span>
+                  <span class="text-[10px] font-mono text-slate-400">Customer Experience</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">Complaint Ticket Surge</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Problem: Support ticket volumes double.</p>
+                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                  Evaluates product batch defects, delivery carrier delays, billing error events, policy updates, and affected customer segments.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                Lag &amp; Symptom Disambiguation
+              </div>
+            </div>
+
+            <!-- 5. Retail -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-50 text-purple-700 border border-purple-200">RETAIL</span>
+                  <span class="text-[10px] font-mono text-slate-400">Merchandising</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">Store Sales Decline</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Problem: Regional retail sales fall sharply.</p>
+                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                  Checks stockout levels, local pricing changes, competitor discount campaigns, store inventory logs, and customer foot-traffic shifts.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                Regional Segment Isolation
+              </div>
+            </div>
+
+            <!-- 6. SaaS -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-teal-50 text-teal-700 border border-teal-200">SaaS / TECH</span>
+                  <span class="text-[10px] font-mono text-slate-400">Software Operations</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">Conversion Rate Drop</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Problem: Free-to-paid conversions fall.</p>
+                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                  Correlates code deployment releases, app latency logs, authentication gateway errors, pricing page changes, and user cohort segments.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                Release &amp; Latency Precedence
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- WHO BENEFITS GRID -->
+        <div class="bg-slate-100 p-6 md:p-8 rounded-3xl border border-slate-200">
+          <div class="mb-4">
+            <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Who Benefits from CasualCourt?</h3>
+            <p class="text-xs text-slate-500">Cross-functional team alignment on verified root causes</p>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+            <div class="p-4 bg-white rounded-xl border border-slate-200">
+              <span class="font-bold text-slate-900">Operations Teams</span>
+              <p class="text-[11px] text-slate-500 mt-1">Quickly isolate supplier, transit, and inventory bottlenecks.</p>
+            </div>
+            <div class="p-4 bg-white rounded-xl border border-slate-200">
+              <span class="font-bold text-slate-900">Business Analysts</span>
+              <p class="text-[11px] text-slate-500 mt-1">Automate multi-source data correlation and anomaly root cause analysis.</p>
+            </div>
+            <div class="p-4 bg-white rounded-xl border border-slate-200">
+              <span class="font-bold text-slate-900">Risk &amp; Compliance</span>
+              <p class="text-[11px] text-slate-500 mt-1">Access auditable evidence ledgers and non-probabilistic decision traces.</p>
+            </div>
+            <div class="p-4 bg-white rounded-xl border border-slate-200">
+              <span class="font-bold text-slate-900">Executive Leadership</span>
+              <p class="text-[11px] text-slate-500 mt-1">Review executive verdict summaries and recommended SLA actions.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+</main>
+
+  <!-- PERSISTENT BOTTOM CONTROLS & DOCK -->
+  
+
+  <!-- SCRIPT FOR NAVIGATION & INTERACTIVITY LOGIC -->
+  <script>
+    let currentSlide = 1;
+    const routes = {
+      'case': { slide: 1, title: 'Case Workspace' },
+      'evidence': { slide: 2, title: 'Evidence Workspace' },
+      'suspects': { slide: 3, title: 'Suspects Workspace' },
+      'forensics': { slide: 4, title: 'Forensics Workspace' },
+      'challenge': { slide: 5, title: 'Challenge Workspace' },
+      'verdict': { slide: 6, title: 'Verdict Workspace' },
+      'audit': { slide: 7, title: 'Audit Workspace' },
+      'tutorial': { slide: 8, title: 'Tutorial & Onboarding' }
+    };
+
+    const slideToRoute = {
+      1: 'case',
+      2: 'evidence',
+      3: 'suspects',
+      4: 'forensics',
+      5: 'challenge',
+      6: 'verdict',
+      7: 'audit',
+      8: 'tutorial'
+    };
+
+    let isSidebarCollapsed = false;
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('desktopSidebar');
+      const collapseIcon = document.getElementById('collapseIcon');
+      const collapseText = document.getElementById('collapseText');
+
+      if (!sidebar) return;
+
+      isSidebarCollapsed = !isSidebarCollapsed;
+
+      if (isSidebarCollapsed) {
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('sidebar-collapsed');
+        if (collapseIcon) collapseIcon.classList.add('rotate-180');
+      } else {
+        sidebar.classList.remove('sidebar-collapsed');
+        sidebar.classList.add('w-64');
+        if (collapseIcon) collapseIcon.classList.remove('rotate-180');
+      }
+    }
+
+    
+    function togglePattern(patternNum) {
+      const body = document.getElementById(`pattern-body-${patternNum}`);
+      const chevron = document.getElementById(`pattern-chevron-${patternNum}`);
+      const statusText = document.getElementById(`pattern-status-text-${patternNum}`);
+
+      if (!body) return;
+
+      const isHidden = body.classList.contains('hidden');
+
+      if (isHidden) {
+        body.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
+        if (statusText) statusText.innerText = "Collapse Details";
+      } else {
+        body.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+        if (statusText) statusText.innerText = "Expand Details";
+      }
+    }
+
+function toggleMobileMenu() {
+      const menu = document.getElementById('mobileNavMenu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function navigateTo(routeName, pushState = true) {
+      if (!routes[routeName]) routeName = 'case';
+      const routeInfo = routes[routeName];
+      const targetSlide = routeInfo.slide;
+
+      // Update URL hash/history for SPA routing
+      if (pushState) {
+        try {
+          window.location.hash = `#/${routeName}`;
+        } catch (e) {}
+      }
+
+      // Hide all panels & reset active states
+      Object.keys(routes).forEach(r => {
+        const slideId = `slide-${routes[r].slide}`;
+        const sideNavId = `sidebar-nav-${r}`;
+        const mobileNavId = `mobile-nav-${r}`;
+
+        const slide = document.getElementById(slideId);
+        const sideNav = document.getElementById(sideNavId);
+        const mobileNav = document.getElementById(mobileNavId);
+
+        if (slide) {
+          slide.classList.remove('active-slide');
+          slide.classList.add('hidden-slide');
+        }
+
+        if (sideNav) {
+          sideNav.className = "sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60";
+          const icon = sideNav.querySelector('svg');
+          if (icon) icon.className = "w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400";
+        }
+
+        if (mobileNav) {
+          mobileNav.className = "w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800";
+        }
+      });
+
+      // Show target slide & highlight nav item
+      currentSlide = targetSlide;
+      const activeSlide = document.getElementById(`slide-${targetSlide}`);
+      const activeSideNav = document.getElementById(`sidebar-nav-${routeName}`);
+      const activeMobileNav = document.getElementById(`mobile-nav-${routeName}`);
+
+      if (activeSlide) {
+        activeSlide.classList.remove('hidden-slide');
+        activeSlide.classList.add('active-slide');
+      }
+
+      if (activeSideNav) {
+        activeSideNav.className = "sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all sidebar-item-active";
+        const icon = activeSideNav.querySelector('svg');
+        if (icon) icon.className = "w-4 h-4 shrink-0 text-white";
+      }
+
+      if (activeMobileNav) {
+        activeMobileNav.className = "w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white";
+      }
+
+      // Update Workspace Title
+      const titleElem = document.getElementById('activeViewTitle');
+      if (titleElem) {
+        titleElem.innerText = routeInfo.title;
+      }
+
+      // Close mobile menu if open
+      const mobileMenu = document.getElementById('mobileNavMenu');
+      if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Alias for existing inline onclick calls
+    function goToSlide(slideNumber) {
+      const routeName = slideToRoute[slideNumber] || 'case';
+      navigateTo(routeName);
+    }
+
+    // Route listener for browser navigation (Hashchange / Popstate)
+    function handleRouteFromURL() {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      const route = hash.split('/')[0];
+      if (routes[route]) {
+        navigateTo(route, false);
+      } else {
+        navigateTo('case', false);
+      }
+    }
+
+    window.addEventListener('hashchange', handleRouteFromURL);
+    window.addEventListener('DOMContentLoaded', handleRouteFromURL);
+    const totalSlides = 7;
+    let autoPlayTimer = null;
+    let isAutoPlaying = false;
+
+    const slideTitles = [
+      "1. Case",
+      "2. Evidence",
+      "3. Suspects",
+      "4. Forensics",
+      "5. Challenge",
+      "6. Verdict",
+      "7. Audit"
+    ];
+
+    const viewNames = {
+      1: "Case Workspace",
+      2: "Evidence Workspace",
+      3: "Suspects Workspace",
+      4: "Forensics Workspace",
+      5: "Challenge Workspace",
+      6: "Verdict Workspace",
+      7: "Audit Workspace"
+    };
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileNavMenu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function goToSlide(slideNumber) {
+      if (slideNumber < 1) slideNumber = 1;
+      if (slideNumber > totalSlides) slideNumber = totalSlides;
+
+      // Hide all panels & reset sidebar navigation active states
+      for (let i = 1; i <= totalSlides; i++) {
+        const slide = document.getElementById(`slide-${i}`);
+        const sideNav = document.getElementById(`sidebar-nav-${i}`);
+        const mobileNav = document.getElementById(`mobile-nav-${i}`);
+
+        if (slide) {
+          slide.classList.remove('active-slide');
+          slide.classList.add('hidden-slide');
+        }
+
+        if (sideNav) {
+          sideNav.className = "sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60";
+          const icon = sideNav.querySelector('svg');
+          if (icon) icon.className = "w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400";
+        }
+
+        if (mobileNav) {
+          mobileNav.className = "w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800";
+        }
+      }
+
+      // Show target workspace panel
+      currentSlide = slideNumber;
+      const activeSlide = document.getElementById(`slide-${currentSlide}`);
+      const activeSideNav = document.getElementById(`sidebar-nav-${currentSlide}`);
+      const activeMobileNav = document.getElementById(`mobile-nav-${currentSlide}`);
+
+      if (activeSlide) {
+        activeSlide.classList.remove('hidden-slide');
+        activeSlide.classList.add('active-slide');
+      }
+
+      if (activeSideNav) {
+        activeSideNav.className = "sidebar-item group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all sidebar-item-active";
+        const icon = activeSideNav.querySelector('svg');
+        if (icon) icon.className = "w-4 h-4 shrink-0 text-white";
+      }
+
+      if (activeMobileNav) {
+        activeMobileNav.className = "w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white";
+      }
+
+      // Update Top Header View Title
+      const titleElem = document.getElementById('activeViewTitle');
+      if (titleElem && viewNames[currentSlide]) {
+        titleElem.innerText = viewNames[currentSlide];
+      }
+
+      // Close mobile menu if open
+      const mobileMenu = document.getElementById('mobileNavMenu');
+      if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+      }
+
+      // Window scroll to top smooth
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        goToSlide(currentSlide + 1);
+      } else {
+        goToSlide(1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        goToSlide(currentSlide - 1);
+      } else {
+        goToSlide(totalSlides);
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key >= '1' && e.key <= '7') {
+        goToSlide(parseInt(e.key));
+      }
+    });
+
+    // Auto Play Guided Tour
+    function toggleAutoPlay() {
+      if (isAutoPlaying) {
+        clearInterval(autoPlayTimer);
+        isAutoPlaying = false;
+        document.getElementById('playText').innerText = "Guided Tour";
+        document.getElementById('autoplayBtn').classList.remove('bg-blue-600', 'text-white');
+        document.getElementById('autoplayBtn').classList.add('bg-blue-50', 'text-blue-700');
+        triggerNotification('Guided tour paused.');
+      } else {
+        isAutoPlaying = true;
+        document.getElementById('playText').innerText = "Pause Tour";
+        document.getElementById('autoplayBtn').classList.remove('bg-blue-50', 'text-blue-700');
+        document.getElementById('autoplayBtn').classList.add('bg-blue-600', 'text-white');
+        triggerNotification('Guided tour active (advancing every 6 seconds).');
+        
+        autoPlayTimer = setInterval(() => {
+          nextSlide();
+        }, 6000);
+      }
+    }
+
+    // Evidence Ingestion filtering
+    function filterIngestion(category) {
+      const cards = document.querySelectorAll('.ingest-card');
+      const buttons = ['all', 'orders', 'supplier', 'inventory', 'support'];
+
+      buttons.forEach(btn => {
+        const el = document.getElementById(`btn-ingest-${btn}`);
+        if (el) {
+          if (btn === category) {
+            el.className = "px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-sm transition";
+          } else {
+            el.className = "px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition";
+          }
+        }
+      });
+
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      triggerNotification(`Filtered evidence sources by: ${category.toUpperCase()}`);
+    }
+
+    // Toast Notification Utility
+    let toastTimeout;
+    function triggerNotification(msg) {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastMessage');
+      if (!toast || !text) return;
+
+      text.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+    }
+
+    function downloadAuditReport() {
+      triggerNotification('Preparing auditable investigation dossier...');
+    }
+
+    // Real Backend Integration & Investigation Engine Runner
+    const loadingStages = [
+      "Preparing data...",
+      "Checking orders...",
+      "Checking suppliers...",
+      "Checking inventory...",
+      "Checking payments...",
+      "Checking support evidence...",
+      "Comparing hypotheses...",
+      "Challenging leading explanation..."
+    ];
+
+    async function runRealSampleInvestigation() {
+      const overlay = document.getElementById('loadingOverlay');
+      const stageText = document.getElementById('loadingStageText');
+      const progressBar = document.getElementById('loadingProgressBar');
+
+      if (overlay) overlay.classList.remove('hidden');
+
+      try {
+        // Step through operational backend stages
+        for (let i = 0; i < loadingStages.length - 2; i++) {
+          if (stageText) stageText.innerText = loadingStages[i];
+          if (progressBar) progressBar.style.width = `${((i + 1) / loadingStages.length) * 100}%`;
+          await new Promise(r => setTimeout(r, 160));
+        }
+
+        if (stageText) stageText.innerText = "Challenging leading explanation...";
+        if (progressBar) progressBar.style.width = "90%";
+
+        // Call REAL Python investigation backend API
+        const res = await fetch('http://127.0.0.1:8001/api/sample-investigation');
+        if (!res.ok) {
+          throw new Error("We couldn't complete the investigation. Check the data sources and try again.");
+        }
+        const data = await res.json();
+
+        if (stageText) stageText.innerText = "Finalizing auditable verdict...";
+        if (progressBar) progressBar.style.width = "100%";
+        await new Promise(r => setTimeout(r, 180));
+
+        // Update all 7 sections dynamically
+        updateUIWithEngineResult(data);
+
+        if (overlay) overlay.classList.add('hidden');
+        triggerNotification("Real investigation engine completed successfully!");
+      } catch (err) {
+        console.error("Investigation error:", err);
+        if (overlay) overlay.classList.add('hidden');
+        triggerNotification("We couldn't complete the investigation. Check the data sources and try again.");
+      }
+    }
+
+    function updateUIWithEngineResult(data) {
+      if (!data) return;
+
+      const tick = document.getElementById('telemetryTick');
+      if (tick) tick.innerText = 'ENGINE SYNCED';
+
+      // 1. SECTION 1 — CASE
+      if (data.anomaly) {
+        const curPct = (data.anomaly.current_cancellation_rate * 100).toFixed(1);
+        const basePct = (data.anomaly.baseline_cancellation_rate * 100).toFixed(1);
+        
+        const curEl = document.getElementById('val-current-rate');
+        if (curEl) curEl.innerText = `${curPct}%`;
+
+        const baseEl = document.getElementById('val-baseline-rate');
+        if (baseEl) baseEl.innerText = `vs ${basePct}% baseline`;
+
+        const dateEl = document.getElementById('val-start-date');
+        if (dateEl) dateEl.innerText = `${data.anomaly.anomaly_start_date} (Day ${data.anomaly.anomaly_start_day})`;
+
+        const affEl = document.getElementById('val-affected-orders');
+        if (affEl) affEl.innerText = `${data.anomaly.total_affected_orders} Orders`;
+
+        const riskEl = document.getElementById('val-value-at-risk');
+        if (riskEl) riskEl.innerText = `($${data.anomaly.estimated_value_at_risk.toLocaleString()} Risk)`;
+      }
+
+      // 2. SECTION 5 — COUNTER-HYPOTHESIS DEFENSE
+      if (data.defense) {
+        const leadingHyp = data.defense.leading_hypothesis || "Supplier / Delivery Disruption";
+        
+        const hTitle = document.getElementById('val-challenge-header-title');
+        if (hTitle) hTitle.innerText = `Before we blame ${leadingHyp.toLowerCase()}...`;
+        
+        const hSub = document.getElementById('val-challenge-header-sub');
+        if (hSub) hSub.innerText = `Can the leading explanation survive a challenge?`;
+
+        // Render Tests Grid
+        if (data.defense.tests && Array.isArray(data.defense.tests)) {
+          const grid = document.getElementById('val-challenge-tests-grid');
+          if (grid) {
+            grid.innerHTML = data.defense.tests.map(t => {
+              const badgeColor = t.passed
+                ? (t.result.includes('REJECTED')
+                    ? 'bg-amber-100 text-amber-800 border-amber-200'
+                    : 'bg-emerald-100 text-emerald-800 border-emerald-200')
+                : 'bg-red-100 text-red-800 border-red-200';
+
+              const icon = t.passed ? '✓' : '✕';
+              const iconColor = t.passed ? 'text-emerald-700' : 'text-red-700';
+
+              return `
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-400 transition">
+                  <div>
+                    <div class="flex justify-between items-center mb-3">
+                      <span class="font-mono text-xs font-bold text-blue-700">${t.id}</span>
+                      <span class="px-2.5 py-1 text-xs font-bold rounded-lg ${badgeColor} border">${t.result}</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-lg">${t.test_name}</h3>
+                    <p class="text-xs text-slate-500 mt-1">${t.question}</p>
+
+                    <div class="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1.5">
+                      <div class="text-[11px] ${iconColor} font-semibold mt-1">
+                        ${icon} ${t.details}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // Render Falsification Grid ("What Would Change Our Mind?")
+        if (data.defense.what_would_change_our_mind && Array.isArray(data.defense.what_would_change_our_mind)) {
+          const fGrid = document.getElementById('val-falsification-grid');
+          if (fGrid) {
+            fGrid.innerHTML = data.defense.what_would_change_our_mind.map(cond => `
+              <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-slate-200 flex items-start space-x-2.5">
+                <span class="text-amber-400 font-bold text-sm shrink-0">↳</span>
+                <span>${cond}</span>
+              </div>
+            `).join('');
+          }
+        }
+
+        // Hero Test Result Banner
+        const status = data.defense.status || 'CASE SURVIVED';
+        const badge = document.getElementById('val-challenge-status-badge');
+        const title = document.getElementById('val-challenge-status-title');
+        const desc = document.getElementById('val-challenge-status-desc');
+        const bannerIcon = document.getElementById('val-challenge-banner-icon');
+
+        if (badge) {
+          badge.innerText = status;
+          if (status === 'CASE SURVIVED') {
+            badge.className = 'px-2.5 py-0.5 text-xs font-bold bg-emerald-500 text-slate-950 rounded-full font-mono';
+          } else if (status === 'CASE CHALLENGED') {
+            badge.className = 'px-2.5 py-0.5 text-xs font-bold bg-amber-500 text-slate-950 rounded-full font-mono';
+          } else {
+            badge.className = 'px-2.5 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full font-mono';
+          }
+        }
+
+        if (bannerIcon) {
+          if (status === 'CASE SURVIVED') {
+            bannerIcon.innerHTML = '✓';
+            bannerIcon.className = 'w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-extrabold text-xl font-mono shrink-0';
+          } else if (status === 'CASE CHALLENGED') {
+            bannerIcon.innerHTML = '⚠';
+            bannerIcon.className = 'w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-extrabold text-xl font-mono shrink-0';
+          } else {
+            bannerIcon.innerHTML = '✕';
+            bannerIcon.className = 'w-14 h-14 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/40 flex items-center justify-center font-extrabold text-xl font-mono shrink-0';
+          }
+        }
+
+        if (title) {
+          title.innerText = status === 'CASE SURVIVED'
+            ? 'Leading Hypothesis Survived Challenge'
+            : status === 'CASE CHALLENGED'
+            ? 'Leading Hypothesis Under Challenge'
+            : 'Leading Hypothesis Failed Challenge';
+        }
+
+        if (desc) {
+          desc.innerText = data.defense.summary || `${leadingHyp} challenge completed.`;
+        }
+      }
+
+      // 3. SECTION 7 — AUDIT LEDGER TABLE
+      if (data.evidence_ledger && Array.isArray(data.evidence_ledger)) {
+        window.globalEvidenceLedger = data.evidence_ledger;
+        const tbody = document.getElementById('auditLedgerTableBody');
+        if (tbody) {
+          tbody.innerHTML = data.evidence_ledger.map(item => {
+            const dirColor = item.direction === 'SUPPORTS' ? 'bg-emerald-100 text-emerald-800' :
+                             item.direction === 'CONTRADICTS' ? 'bg-red-100 text-red-800' :
+                             item.direction === 'NOISY' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800';
+            const impactColor = item.impact === 'HIGH' ? 'text-red-600 font-bold' :
+                                item.impact === 'MEDIUM' ? 'text-amber-600 font-bold' : 'text-slate-500';
+
+            return `
+              <tr class="hover:bg-blue-50/70 transition cursor-pointer" onclick="openEvidenceModal('${item.id}')" title="Click to view full auditable provenance chain for ${item.id}">
+                <td class="p-4 font-bold text-slate-900 flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-blue-100 text-blue-800">${item.id}</span>
+                  <span>${item.source}</span>
+                </td>
+                <td class="p-4 text-slate-600">${item.observation}</td>
+                <td class="p-4 font-mono text-slate-700">${item.test}</td>
+                <td class="p-4"><span class="px-2 py-0.5 rounded ${dirColor} font-bold text-[10px]">${item.direction}</span></td>
+                <td class="p-4 ${impactColor}">${item.impact}</td>
+                <td class="p-4 flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">${item.hypothesis}</span>
+                  <span class="text-xs text-blue-600 hover:underline font-semibold font-mono ml-2">Inspect 🔍</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+      // 4. SECTION 7 — INVESTIGATION EXECUTION TRACE
+      if (data.investigation_trace && Array.isArray(data.investigation_trace)) {
+        const traceList = document.getElementById('investigationTraceList');
+        if (traceList) {
+          traceList.innerHTML = data.investigation_trace.map(t => {
+            const statusBadge = t.status === 'COMPLETED' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                                t.status === 'PASSED' || t.status === 'SURVIVED' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                                t.status === 'CONTRADICTED' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                                'bg-slate-700 text-slate-300 border-slate-600';
+
+            const numStr = String(t.step_number).padStart(2, '0');
+
+            return `
+              <div class="p-3.5 bg-slate-800/80 rounded-xl border border-slate-700/80 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:border-slate-600 transition">
+                <div class="flex items-start space-x-3">
+                  <span class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[11px] shrink-0 font-mono">${numStr}</span>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-slate-200">${t.stage}</span>
+                      <span class="px-2 py-0.5 text-[10px] font-bold rounded border ${statusBadge}">${t.status}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 mt-1 font-sans"><strong class="text-slate-400">Action:</strong> ${t.action}</p>
+                    <p class="text-[11px] text-slate-200 mt-0.5 font-sans"><strong class="text-emerald-400">Decision:</strong> ${t.decision}</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5 font-sans"><strong class="text-blue-400">Next Action:</strong> ${t.next_action}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+
+    function openEvidenceModal(evId) {
+      const ledger = window.globalEvidenceLedger || [];
+      const item = ledger.find(e => e.id === evId) || ledger[0];
+      if (!item) {
+        triggerNotification("Evidence details loading from investigation engine...");
+        return;
+      }
+
+      const modal = document.getElementById('evidenceAuditModal');
+      if (!modal) return;
+
+      const idEl = document.getElementById('ev-modal-id');
+      if (idEl) idEl.innerText = item.id;
+
+      const srcEl = document.getElementById('ev-modal-source');
+      if (srcEl) srcEl.innerText = item.source;
+
+      const dirBadge = document.getElementById('ev-modal-direction-badge');
+      if (dirBadge) {
+        dirBadge.innerText = item.direction;
+        dirBadge.className = item.direction === 'SUPPORTS' ? 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 font-mono' :
+                             item.direction === 'CONTRADICTS' ? 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-800 font-mono' :
+                             'px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-800 font-mono';
+      }
+
+      const titleEl = document.getElementById('ev-modal-title');
+      if (titleEl) titleEl.innerText = item.observation;
+
+      const attrSrc = document.getElementById('ev-attr-source');
+      if (attrSrc) attrSrc.innerText = item.source;
+
+      const attrDate = document.getElementById('ev-attr-date');
+      if (attrDate) attrDate.innerText = item.date ? `${item.date}` : 'Incident Window';
+
+      const attrType = document.getElementById('ev-attr-type');
+      if (attrType) attrType.innerText = item.evidence_type;
+
+      const attrTest = document.getElementById('ev-attr-test');
+      if (attrTest) attrTest.innerText = item.test;
+
+      const attrStr = document.getElementById('ev-attr-strength');
+      if (attrStr) attrStr.innerText = `${item.strength > 0 ? 'Strong Support' : item.strength < 0 ? 'Contradicting' : 'Noisy Signal'} (Weight: ${item.source_reliability})`;
+
+      const attrDir = document.getElementById('ev-attr-direction');
+      if (attrDir) attrDir.innerText = `${item.direction} (${item.impact} IMPACT)`;
+
+      const attrWhy = document.getElementById('ev-attr-why');
+      if (attrWhy) attrWhy.innerText = item.explanation;
+
+      // Provenance Chain
+      const chainSrc = document.getElementById('ev-chain-source-badge');
+      if (chainSrc) chainSrc.innerText = item.source;
+
+      const chainRaw = document.getElementById('ev-chain-raw');
+      if (chainRaw) chainRaw.innerText = item.raw_observation || `${item.source}: ${item.observation}`;
+
+      const chainDerived = document.getElementById('ev-chain-derived');
+      if (chainDerived) chainDerived.innerText = item.derived_finding || item.explanation;
+
+      const chainTest = document.getElementById('ev-chain-test');
+      if (chainTest) chainTest.innerText = item.investigation_test || item.test;
+
+      const chainInterp = document.getElementById('ev-chain-interp');
+      if (chainInterp) chainInterp.innerText = item.interpretation || item.explanation;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeEvidenceModal() {
+      const modal = document.getElementById('evidenceAuditModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadLiveInvestigationData();
+    });
+
+    async function loadLiveInvestigationData() {
+      try {
+        const res = await fetch('http://127.0.0.1:8001/api/investigation');
+        if (!res.ok) return;
+        const data = await res.json();
+        updateUIWithEngineResult(data);
+      } catch (e) {
+        console.log("Backend connection offline, ready to connect.");
+      }
+    }
+    // Upload Data Workflow
+    let currentUploadSessionId = null;
+
+    function openUploadModal() {
+      const modal = document.getElementById('uploadModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeUploadModal() {
+      const modal = document.getElementById('uploadModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handleFilesSelected(fileList) {
+      if (!fileList || fileList.length === 0) return;
+
+      const formData = new FormData();
+      for (let i = 0; i < fileList.length; i++) {
+        formData.append('files', fileList[i]);
+      }
+
+      triggerNotification(`Uploading & validating ${fileList.length} CSV files...`);
+
+      try {
+        const res = await fetch('http://127.0.0.1:8001/api/upload-and-validate', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || "Validation failed");
+        }
+
+        const data = await res.json();
+        currentUploadSessionId = data.session_id;
+
+        // Update Source Recognition Checklist Badges
+        const sources = ["Orders", "Supplier Events", "Inventory", "Payments", "Support Tickets", "Competitor Prices"];
+        sources.forEach(src => {
+          const badge = document.getElementById(`src-${src}-badge`);
+          if (badge) {
+            if (data.sources_recognized[src]) {
+              badge.className = "p-2.5 rounded-xl border border-emerald-300 bg-emerald-50/80 flex items-center justify-between";
+              badge.innerHTML = `<span class="font-bold text-emerald-900">${src}</span><span class="text-emerald-700 font-bold text-[10px]">✓ Recognized</span>`;
+            } else {
+              badge.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between";
+              badge.innerHTML = `<span class="font-medium text-slate-500">${src}</span><span class="text-slate-400 font-bold text-[10px]">○ Missing</span>`;
+            }
+          }
+        });
+
+        // Render Validation Feedback Box
+        const valBox = document.getElementById('uploadValidationBox');
+        if (valBox) {
+          valBox.classList.remove('hidden');
+          let html = '';
+
+          if (data.validation_details && data.validation_details.length > 0) {
+            data.validation_details.forEach(item => {
+              if (item.valid) {
+                html += `<div class="text-emerald-700 font-medium">✓ ${item.filename}: ${item.message || 'Validated successfully.'}</div>`;
+              } else {
+                html += `<div class="text-red-600 font-bold">❌ ${item.filename}: ${item.error}</div>`;
+              }
+            });
+          }
+
+          if (data.warnings && data.warnings.length > 0) {
+            data.warnings.forEach(w => {
+              html += `<div class="text-amber-700 font-medium">⚠️ ${w}</div>`;
+            });
+          }
+
+          valBox.innerHTML = html;
+        }
+
+        // Enable / Disable Start Investigation Button
+        const btn = document.getElementById('startUploadedInvestigationBtn');
+        if (btn) {
+          if (data.can_run) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            btn.classList.add('hover:bg-blue-700', 'cursor-pointer');
+          } else {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+          }
+        }
+      } catch (err) {
+        console.error("Upload validation error:", err);
+        triggerNotification("We couldn't validate the uploaded files. Check the file formats and try again.");
+      }
+    }
+
+    async function runUploadedInvestigation() {
+      if (!currentUploadSessionId) return;
+      closeUploadModal();
+
+      const overlay = document.getElementById('loadingOverlay');
+      const stageText = document.getElementById('loadingStageText');
+      const progressBar = document.getElementById('loadingProgressBar');
+
+      if (overlay) overlay.classList.remove('hidden');
+
+      try {
+        for (let i = 0; i < loadingStages.length - 2; i++) {
+          if (stageText) stageText.innerText = loadingStages[i];
+          if (progressBar) progressBar.style.width = `${((i + 1) / loadingStages.length) * 100}%`;
+          await new Promise(r => setTimeout(r, 160));
+        }
+
+        if (stageText) stageText.innerText = "Challenging leading explanation...";
+        if (progressBar) progressBar.style.width = "90%";
+
+        const res = await fetch('http://127.0.0.1:8001/api/run-uploaded-investigation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: currentUploadSessionId })
+        });
+
+        if (!res.ok) {
+          throw new Error("We couldn't complete the investigation. Check the data sources and try again.");
+        }
+
+        const data = await res.json();
+
+        if (stageText) stageText.innerText = "Finalizing auditable verdict...";
+        if (progressBar) progressBar.style.width = "100%";
+        await new Promise(r => setTimeout(r, 180));
+
+        updateUIWithEngineResult(data);
+
+        if (overlay) overlay.classList.add('hidden');
+        triggerNotification("Uploaded data investigation completed successfully!");
+      } catch (err) {
+        console.error("Uploaded investigation error:", err);
+        if (overlay) overlay.classList.add('hidden');
+        triggerNotification("We couldn't complete the investigation. Check the data sources and try again.");
+      }
+    }
+  </script>
+
+  <!-- ENGINE ANALYSIS LOADING OVERLAY MODAL -->
+  <div id="loadingOverlay" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center space-y-5">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
+        <svg class="w-7 h-7 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">Running CasualCourt Investigation</h3>
+        <p class="text-xs text-slate-500 mt-1" id="loadingStageText">Preparing data...</p>
+      </div>
+      <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+        <div id="loadingProgressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 15%;"></div>
+      </div>
+      <p class="text-[11px] text-slate-400 font-mono">Executing data loader, hypothesis tests &amp; challenge suite</p>
+    </div>
+  </div>
+
+  <!-- ELEGANT UPLOAD DATA MODAL -->
+  <div id="uploadModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 border border-blue-200">CSV DATA UPLOAD</span>
+          <h2 class="text-xl font-extrabold text-slate-900 mt-1">Upload Investigation Data</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Select or drag business CSV files. CasualCourt automatically identifies sources &amp; validates schemas.</p>
+        </div>
+        <button onclick="closeUploadModal()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- File Select Dropzone -->
+      <div class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-6 text-center transition bg-slate-50/50 relative cursor-pointer" onclick="document.getElementById('uploadFileInput').click()">
+        <input type="file" id="uploadFileInput" multiple accept=".csv" class="hidden" onchange="handleFilesSelected(this.files)">
+        <div class="w-12 h-12 mx-auto rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+        </div>
+        <p class="text-xs font-bold text-slate-800">Click or drag &amp; drop CSV files here</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Supports Orders, Supplier Events, Inventory, Payments, Tickets, Competitor Prices</p>
+      </div>
+
+      <!-- Live Source Recognition Checklist -->
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Business Source Recognition</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between" id="src-Orders-badge">
+            <span class="font-medium text-slate-700">Orders</span>
+            <span class="text-slate-400 font-bold text-[10px]">○ Pending</span>
+          </div>
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between" id="src-Supplier Events-badge">
+            <span class="font-medium text-slate-700">Supplier Events</span>
+            <span class="text-slate-400 font-bold text-[10px]">○ Pending</span>
+          </div>
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between" id="src-Inventory-badge">
+            <span class="font-medium text-slate-700">Inventory</span>
+            <span class="text-slate-400 font-bold text-[10px]">○ Pending</span>
+          </div>
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between" id="src-Payments-badge">
+            <span class="font-medium text-slate-700">Payments</span>
+            <span class="text-slate-400 font-bold text-[10px]">○ Pending</span>
+          </div>
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between" id="src-Support Tickets-badge">
+            <span class="font-medium text-slate-700">Support Tickets</span>
+            <span class="text-slate-400 font-bold text-[10px]">○ Pending</span>
+          </div>
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between" id="src-Competitor Prices-badge">
+            <span class="font-medium text-slate-700">Competitor Prices</span>
+            <span class="text-slate-400 font-bold text-[10px]">○ Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Itemized Validation Feedback Box -->
+      <div id="uploadValidationBox" class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs text-slate-600 hidden">
+        <!-- Validation feedback items inserted dynamically -->
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="flex justify-end items-center gap-3 pt-2 border-t border-slate-100">
+        <button onclick="closeUploadModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition">
+          Cancel
+        </button>
+        <button id="startUploadedInvestigationBtn" onclick="runUploadedInvestigation()" disabled class="px-5 py-2.5 bg-blue-600 opacity-50 cursor-not-allowed text-white font-bold text-xs rounded-xl shadow-md transition">
+          Start Investigation with Uploaded Data →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AUDITABLE EVIDENCE ITEM PANEL MODAL -->
+  <div id="evidenceAuditModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 md:p-8 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      
+      <!-- Modal Header -->
+      <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800 font-mono" id="ev-modal-id">EV-01</span>
+            <span class="text-xs font-bold text-slate-500 font-mono" id="ev-modal-source">supplier_events.csv</span>
+            <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 font-mono" id="ev-modal-direction-badge">SUPPORTS</span>
+          </div>
+          <h2 class="text-xl font-extrabold text-slate-900 mt-2" id="ev-modal-title">Evidence Audit &amp; Provenance Ledger</h2>
+        </div>
+        <button onclick="closeEvidenceModal()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Key Evidence Attributes Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-slate-400 font-medium uppercase tracking-wider text-[10px]">SOURCE FILE</span>
+          <p class="font-mono font-bold text-slate-900 mt-0.5" id="ev-attr-source">supplier_events.csv</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-slate-400 font-medium uppercase tracking-wider text-[10px]">WHEN IT HAPPENED</span>
+          <p class="font-mono font-bold text-slate-900 mt-0.5" id="ev-attr-date">Day 38 (2026-09-07)</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-slate-400 font-medium uppercase tracking-wider text-[10px]">EVIDENCE TYPE</span>
+          <p class="font-bold text-slate-900 mt-0.5" id="ev-attr-type">OBSERVED</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-slate-400 font-medium uppercase tracking-wider text-[10px]">TEST PERFORMED</span>
+          <p class="font-mono font-bold text-blue-700 mt-0.5" id="ev-attr-test">Temporal Lead Time Test</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-slate-400 font-medium uppercase tracking-wider text-[10px]">STRENGTH &amp; RELIABILITY</span>
+          <p class="font-bold text-slate-900 mt-0.5" id="ev-attr-strength">Strong (Score: 1.80)</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-slate-400 font-medium uppercase tracking-wider text-[10px]">DIRECTION &amp; IMPACT</span>
+          <p class="font-bold text-emerald-700 mt-0.5" id="ev-attr-direction">SUPPORTS (HIGH IMPACT)</p>
+        </div>
+      </div>
+
+      <!-- Why It Matters -->
+      <div class="p-4 bg-blue-50/70 border border-blue-200 rounded-xl text-xs space-y-1">
+        <span class="font-bold text-blue-900 uppercase tracking-wider text-[10px]">Why It Matters</span>
+        <p class="text-slate-700 font-medium leading-relaxed" id="ev-attr-why">
+          Unannounced supplier transit delay preceded the cancellation spike by 4 days.
+        </p>
+      </div>
+
+      <!-- EVIDENCE PROVENANCE CHAIN -->
+      <div class="bg-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-md">
+        <div class="flex justify-between items-center mb-4">
+          <span class="px-2.5 py-0.5 text-xs font-bold bg-purple-500/20 text-purple-300 rounded-full font-mono">HACKATHON AUDIT TRAIL</span>
+          <h3 class="text-sm font-bold text-white">Full Evidence Provenance Chain</h3>
+        </div>
+
+        <div class="space-y-3 relative text-xs">
+          
+          <!-- Step 1: Raw Observation -->
+          <div class="p-4 bg-slate-800/90 rounded-xl border border-slate-700 relative">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">1. RAW OBSERVATION</span>
+              <span class="text-[10px] font-mono text-blue-400" id="ev-chain-source-badge">supplier_events.csv</span>
+            </div>
+            <p class="font-mono text-slate-200 font-semibold" id="ev-chain-raw">
+              supplier_events.csv: Supplier B avg lead_time = 9.03d on 2026-09-07 (baseline 4.18d)
+            </p>
+          </div>
+
+          <div class="flex justify-center text-blue-400 font-bold text-lg leading-none">↓</div>
+
+          <!-- Step 2: Derived Finding -->
+          <div class="p-4 bg-slate-800/90 rounded-xl border border-slate-700 relative">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">2. DERIVED FINDING</span>
+              <span class="text-[10px] font-mono text-amber-400">SIGNAL DERIVED</span>
+            </div>
+            <p class="font-sans text-amber-200 font-bold" id="ev-chain-derived">
+              Unannounced +4.85 day shipping lead time slip on Route B
+            </p>
+          </div>
+
+          <div class="flex justify-center text-amber-400 font-bold text-lg leading-none">↓</div>
+
+          <!-- Step 3: Investigation Test -->
+          <div class="p-4 bg-slate-800/90 rounded-xl border border-slate-700 relative">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">3. INVESTIGATION TEST</span>
+              <span class="text-[10px] font-mono text-blue-300">AUTOMATED TEST</span>
+            </div>
+            <p class="font-mono text-blue-200 font-semibold" id="ev-chain-test">
+              Temporal Lead Time Test (Precedence Check vs Day 42 Anomaly Onset)
+            </p>
+          </div>
+
+          <div class="flex justify-center text-emerald-400 font-bold text-lg leading-none">↓</div>
+
+          <!-- Step 4: Interpretation -->
+          <div class="p-4 bg-slate-800/90 rounded-xl border border-emerald-500/40 relative">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">4. INTERPRETATION</span>
+              <span class="text-[10px] font-mono text-emerald-400">FINAL SYNTHESIS</span>
+            </div>
+            <p class="font-sans text-emerald-200 font-semibold leading-relaxed" id="ev-chain-interp">
+              Supplier lead time delay occurred 4 days before order cancellations spiked. Strongly supports Supplier / Delivery Disruption.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end pt-2 border-t border-slate-100">
+        <button onclick="closeEvidenceModal()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow transition">
+          Close Audit Panel
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

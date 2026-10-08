@@ -1,0 +1,27 @@
+{
+  "scenario": "E-commerce order cancellation spike",
+  "baseline_cancellation_rate": 0.08,
+  "anomaly_rate": 0.31,
+  "anomaly_start_day": 42,
+  "expected_rank": [
+    "Supplier / Delivery Disruption",
+    "Inventory Shortage",
+    "Payment Failure",
+    "Competitor Pricing"
+  ],
+  "noisy_signal": "Payment/refund tickets increase after cancellation while payment success remains about 99%.",
+  "source_reliability": {
+    "payments.csv": 0.95,
+    "orders.csv": 0.9,
+    "inventory.csv": 0.85,
+    "tickets.csv": 0.4,
+    "supplier_events.csv": 0.9,
+    "competitor_prices.csv": 0.75
+  },
+  "scoring": {
+    "strong_support": 2.0,
+    "weak_support": 0.7,
+    "neutral": 0.0,
+    "contradiction": -2.0
+  }
+}
