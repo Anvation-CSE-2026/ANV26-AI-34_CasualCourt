@@ -1,118 +1,321 @@
 # ⚖️ CasualCourt — Autonomous Business Process Investigator
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Python](https://img.shields.io/badge/Python-3.9+-3776AB.svg?style=flat&logo=python)](https://www.python.org/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.0+-38B2AC.svg?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
+<p align="center">
+  <img src="logo.png" alt="CasualCourt Logo" width="140" />
+</p>
 
-**CasualCourt** is an autonomous business process investigation platform designed to analyze operational telemetry, supply chain metrics, customer support tickets, payment gateways, and competitor pricing to discover root causes behind operational anomalies (such as sudden order cancellation spikes).
+<h3 align="center">Turning Operational Data into Actionable Root-Cause Insights</h3>
+
+<p align="center">
+  An intelligent investigation platform that identifies operational anomalies, evaluates competing hypotheses, and uncovers the underlying causes using evidence-driven analysis.
+</p>
+
+<p align="center">
+  <a href="https://casualcourt-app-kssem.web.app/"><strong>🌐 Live Demo</strong></a> •
+  <a href="https://github.com/Anvation-CSE-2026/ANV26-AI-34_CasualCourt"><strong>💻 GitHub Repository</strong></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-UI-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+</p>
+
+---
+
+## 🚀 Overview
+
+**CasualCourt** is an autonomous business process investigation platform built to help businesses understand not just *what went wrong*, but *why it happened*.
+
+It analyzes operational telemetry across orders, suppliers, inventory, payments, customer support, and competitor pricing to identify anomalies and investigate their potential root causes.
+
+Instead of relying on isolated metrics or surface-level correlations, CasualCourt evaluates competing hypotheses, analyzes supporting and contradicting evidence, and ranks the most plausible explanations.
+
+### 🎯 The Problem We Solve
+
+A sudden increase in order cancellations doesn't automatically mean the payment system is broken. The real cause might be delayed suppliers, inventory shortages, or another upstream operational issue.
+
+CasualCourt connects these signals to help distinguish **root causes from misleading correlations**.
 
 ---
 
 ## 🌟 Key Features
 
-- **Automated Root Cause Diagnosis**: Formulates and evaluates multiple competing hypotheses to isolate exact operational bottlenecks.
-- **Causal & Evidence Analysis**: Measures temporal lead-lag patterns, supplier lead-time inflation, inventory stockouts, and anomaly timing.
-- **Adversarial & Defense Engine**: Filters out false positive signals and noisy metrics (e.g., post-cancellation support tickets vs. true payment gateway outages).
-- **Custom Dataset Upload & Validation**: Flexible ingestion engine supporting custom CSV/JSON operational telemetry uploads with schema verification.
-- **Interactive UI Dashboard**: Modern, responsive web frontend featuring live investigation progress, hypothesis rankings, evidence breakdown, defense analysis, and interactive data visualization.
+| Feature | Description |
+|---|---|
+| 🧠 **Automated Root-Cause Analysis** | Generates and evaluates competing hypotheses to identify likely operational bottlenecks. |
+| 🔍 **Causal & Evidence Analysis** | Examines event timing, lead-lag relationships, supplier delays, stockouts, and operational anomalies. |
+| 🛡️ **Adversarial Defense Engine** | Challenges misleading signals and evaluates evidence against alternative explanations. |
+| 📂 **Custom Dataset Upload** | Supports CSV and JSON operational data with schema validation. |
+| 📊 **Interactive Investigation Dashboard** | Presents investigation progress, hypothesis rankings, evidence breakdowns, and defense analysis. |
+| 🏭 **Multi-Source Operational Analysis** | Connects order, inventory, supplier, payment, support, and competitor data into one investigation workflow. |
 
 ---
 
-## 🏗️ Project Architecture
+## 🏆 What Makes CasualCourt Different?
 
+Traditional dashboards show metrics. CasualCourt investigates relationships between them.
+
+- **Beyond anomaly detection:** Investigates possible explanations for abnormal business behavior.
+- **Evidence-driven ranking:** Compares competing hypotheses rather than relying on a single signal.
+- **False-positive resistance:** Uses counter-evidence and alternative explanations to challenge misleading conclusions.
+- **Cross-system investigation:** Connects events across multiple operational data sources.
+- **Flexible analysis:** Supports investigation of custom datasets in addition to the supplied demo scenario.
+
+> **Our goal:** Help businesses move from *“What happened?”* to *“What most likely caused it, and what evidence supports that conclusion?”*
+
+---
+
+## 🏗️ System Architecture
+
+CasualCourt follows a modular architecture that separates data ingestion, investigation orchestration, hypothesis evaluation, evidence scoring, and defense analysis.
+
+```text
+┌──────────────────────────────────────────────┐
+│             Frontend Dashboard               │
+│      Interactive Investigation Interface     │
+└──────────────────────┬───────────────────────┘
+                       │ HTTP / REST API
+┌──────────────────────▼───────────────────────┐
+│                FastAPI Backend                │
+├──────────────────────────────────────────────┤
+│              Data Loader                     │
+│      Upload • Parsing • Validation            │
+├──────────────────────────────────────────────┤
+│             Orchestrator                     │
+│        Investigation Workflow                │
+├───────────────────┬──────────────────────────┤
+│ Hypothesis Engine │ Evidence Engine           │
+│ Candidate Causes │ Evidence & Scoring         │
+├───────────────────┴──────────────────────────┤
+│               Defense Engine                  │
+│       Counter-Evidence & Noise Filtering      │
+├──────────────────────────────────────────────┤
+│       Ranked Hypotheses & Investigation       │
+│                  Results                     │
+└──────────────────────────────────────────────┘
 ```
+
+### 📁 Repository Structure
+
+```text
 ANV26-AI-34_CasualCourt/
-├── backend/                        # FastAPI Backend Service
-│   ├── main.py                     # API routes & server configuration
-│   ├── orchestrator.py             # Pipeline orchestration engine
-│   ├── hypothesis_engine.py       # Hypothesis generation logic
-│   ├── evidence_engine.py         # Evidence scoring & statistical metrics
-│   ├── defense_engine.py          # Noise filtration & counter-argument evaluation
-│   ├── data_loader.py             # Data loader & dynamic schema validation
-│   ├── models.py                  # Pydantic data models & response schemas
-│   ├── investigation_engine.py    # Core investigation process wrapper
-│   └── test_engine.py             # Unit verification tests
-├── CasualCourt_demo_dataset/       # Demo CSV Operational Telemetry
-│   ├── orders.csv                 # Order transactions & status logs
-│   ├── supplier_events.csv        # Supplier lead time & dispatch logs
-│   ├── inventory.csv              # SKU stock level telemetry
-│   ├── payments.csv               # Payment gateway transaction metrics
-│   ├── tickets.csv                # Customer support ticket logs
-│   ├── competitor_prices.csv      # Competitor price tracking
-│   └── investigation_config.json  # Investigation rules & parameters
-├── code.html                       # Frontend Dashboard Application
-├── logo.png / logo.jpg             # Project Branding Assets
-├── .gitignore                      # Git exclusion rules
-└── README.md                       # Project Documentation
+│
+├── backend/
+│   ├── main.py
+│   ├── orchestrator.py
+│   ├── hypothesis_engine.py
+│   ├── evidence_engine.py
+│   ├── defense_engine.py
+│   ├── data_loader.py
+│   ├── models.py
+│   ├── investigation_engine.py
+│   └── test_engine.py
+│
+├── CasualCourt_demo_dataset/
+│   ├── orders.csv
+│   ├── supplier_events.csv
+│   ├── inventory.csv
+│   ├── payments.csv
+│   ├── tickets.csv
+│   ├── competitor_prices.csv
+│   └── investigation_config.json
+│
+├── code.html
+├── logo.png
+├── logo.jpg
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## 📊 Demo Scenario Overview
+## 📊 Demo Investigation: Order Cancellation Spike
 
-The included demo dataset (`CasualCourt_demo_dataset`) models an e-commerce platform experiencing a sudden jump in order cancellation rate from **~8% to ~31%** around Day 42:
+The included demo dataset represents an e-commerce business experiencing a sharp increase in order cancellations.
 
-1. **Root Cause**: Supplier B lead times inflated drastically around Day 38.
-2. **Intermediate Impact**: Inventory stockouts occurred around Day 41.
-3. **Outcome**: Unfulfilled orders led to massive customer cancellation spikes.
-4. **Noise Signal**: Payment support tickets spiked after cancellations occurred, but payment gateway success remained stable (~99%).
+### Scenario
 
-### Expected Engine Ranking:
-1. **Supplier / Delivery Disruption** (Primary Root Cause)
-2. **Inventory Shortage** (Mediating Factor)
-3. **Payment Failure** (Refuted / Filtered Noise Signal)
-4. **Competitor Pricing** (Low Correlation Signal)
+<pre>
+Normal Cancellation Rate     ~8%
+           │
+           ▼
+Supplier Lead Times Increase
+           │
+           ▼
+Inventory Stockouts Occur
+           │
+           ▼
+Order Fulfilment Is Disrupted
+           │
+           ▼
+Cancellation Rate Rises to ~31%
+</pre>
+
+### 🔬 Investigation Findings
+
+| Hypothesis | Expected Assessment |
+|---|---|
+| 🥇 Supplier / Delivery Disruption | Primary suspected root cause |
+| 🥈 Inventory Shortage | Intermediate contributing factor |
+| 🥉 Payment Failure | Contradicted by stable payment success |
+| 4️⃣ Competitor Pricing | Lower-priority explanation |
+
+The scenario also contains a misleading signal: customer support tickets increase after cancellations, even though payment gateway success remains approximately 99%.
+
+This allows the investigation engine to demonstrate why temporal order, supporting evidence, and contradictory evidence matter.
+
+*Note: These are the expected findings encoded in the demo scenario, not a claim of independently verified live investigation results.*
 
 ---
 
-## 🚀 Quick Start Guide
+## ⚡ Getting Started
 
-### 1. Prerequisites
-Ensure you have Python 3.9+ installed. Install the required backend dependencies:
+### Prerequisites
+
+- Python 3.9 or later
+- pip
+- Git
+- A modern web browser
+
+### 1. Clone the Repository
 
 ```bash
-pip install fastapi uvicorn pandas numpy pydantic python-multipart
+git clone https://github.com/Anvation-CSE-2026/ANV26-AI-34_CasualCourt.git
+
+cd ANV26-AI-34_CasualCourt
 ```
 
-### 2. Launch Backend API
-Start the FastAPI server on port 8001:
+### 2. Install Backend Dependencies
+
+```bash
+python -m venv .venv
+```
+
+Activate the virtual environment.
+
+**Windows PowerShell:**
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+**Windows Command Prompt:**
+
+```bat
+.venv\Scripts\activate.bat
+```
+
+Install the dependencies:
+
+```bash
+python -m pip install fastapi uvicorn pandas numpy pydantic python-multipart
+```
+
+### 3. Start the Backend
+
+From the repository root, run:
+
+```bash
+uvicorn backend.main:app --reload --port 8001
+```
+
+If your environment requires running the application directly, use:
 
 ```bash
 cd backend
 python main.py
 ```
-Or with Uvicorn directly:
-```bash
-uvicorn backend.main:app --reload --port 8001
-```
 
-The API will be available at:
-- **Base URL**: `http://127.0.0.1:8001`
-- **Interactive API Docs (Swagger)**: `http://127.0.0.1:8001/docs`
+Backend URLs:
 
-### 3. Launch Frontend Application
-Open `code.html` directly in any web browser, or serve it using Python's built-in HTTP server:
+- **API Base URL:** http://127.0.0.1:8001
+- **Interactive API Documentation:** http://127.0.0.1:8001/docs
+
+### 4. Launch the Frontend
+
+Open `code.html` directly in your browser, or serve the repository root using Python:
 
 ```bash
-# From repository root
 python -m http.server 8000
 ```
-Then visit `http://localhost:8000/code.html` in your web browser.
+
+Then open:
+
+http://localhost:8000/code.html
+
+**Important:** The frontend must be configured to communicate with your locally running backend. Opening the HTML file alone does not start the API server.
 
 ---
 
-## 🔌 API Endpoints Summary
+## 🔌 API Reference
 
-| Endpoint | Method | Description |
+| Endpoint | Method | Purpose |
 |---|---|---|
-| `/api/health` | `GET` | Health check & data directory readiness |
-| `/api/sample-investigation` | `GET / POST` | Executes investigation on the included demo dataset |
-| `/api/upload-and-validate` | `POST` | Uploads and validates custom dataset files |
-| `/api/run-uploaded-investigation` | `POST` | Runs root-cause investigation on uploaded session data |
+| `/api/health` | GET | Checks backend health and data-directory readiness. |
+| `/api/sample-investigation` | GET / POST | Runs an investigation using the demo dataset. |
+| `/api/upload-and-validate` | POST | Uploads and validates custom dataset files. |
+| `/api/run-uploaded-investigation` | POST | Investigates uploaded operational data. |
+
+Use the Swagger interface at `/docs` to inspect the actual request schemas, parameters, and responses supported by your running backend.
 
 ---
 
-## 🤝 Team / Repository Info
+## 🧪 Testing
 
-- **Repository**: [Anvation-CSE-2026/ANV26-AI-34_CasualCourt](https://github.com/Anvation-CSE-2026/ANV26-AI-34_CasualCourt.git)
-- **Project ID**: ANV26-AI-34
+Run the available backend test module from the repository root:
+
+```bash
+python -m unittest backend.test_engine
+```
+
+Review the test output to confirm which checks pass in your environment.
+
+---
+
+## 🛠️ Technology Stack
+
+| Technology | Role |
+|---|---|
+| Python | Investigation logic and data processing |
+| FastAPI | REST API and backend service |
+| Pandas & NumPy | Data manipulation and numerical analysis |
+| Pydantic | Request validation and structured data models |
+| Tailwind CSS | Frontend styling |
+| HTML & JavaScript | Interactive dashboard |
+| Firebase Hosting | Live frontend hosting |
+
+---
+
+## 🌐 Live Application
+
+Experience CasualCourt through the deployed web application.
+
+**👉 [Launch CasualCourt Live](https://casualcourt-app-kssem.web.app/)**
+
+For source code, backend implementation, and project assets, visit the [GitHub repository](https://github.com/Anvation-CSE-2026/ANV26-AI-34_CasualCourt).
+
+*The live frontend and locally documented API are separate deployment components. Backend-dependent features require a reachable, correctly configured API.*
+
+---
+
+## 👥 Project Information
+
+- **Project Name:** CasualCourt
+- **Project ID:** ANV26-AI-34
+- **Repository:** [Anvation-CSE-2026/ANV26-AI-34_CasualCourt](https://github.com/Anvation-CSE-2026/ANV26-AI-34_CasualCourt)
+- **Live Demo:** [casualcourt-app-kssem.web.app](https://casualcourt-app-kssem.web.app/)
+
+---
+
+## 🔮 Our Vision
+
+We envision a future where businesses don't need to manually investigate disconnected dashboards to understand operational failures.
+
+CasualCourt aims to make business investigations more structured, evidence-driven, and explainable—helping teams discover likely root causes faster and make better-informed operational decisions.
+
+---
+
+<p align="center">
+  <strong>⚖️ CasualCourt — Investigate the Evidence. Discover the Cause.</strong>
+</p>
